@@ -53,7 +53,7 @@ class DataSampler:
             self.logger.log_i('%d-class sampled %d from %d with replace:%s'%(cls, n_samples, len(candidate), str(replace)))
 
             np.random.seed(1)
-            idx = np.random.choice(candidate, n, replace=replace)
+            idx = np.random.choice(candidate, n_samples, replace=replace)
             sample_candidate += list(idx)
 
         X_sampled = self.X[sample_candidate]
