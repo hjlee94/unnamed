@@ -154,7 +154,7 @@ class DatasetInterface:
             self.class_info[cls] = len(idx)
 
     def _load_spa(self):
-        dense_data = list()
+        dense_vector = list()
 
         fd = open(self.filename)
 
@@ -164,7 +164,7 @@ class DatasetInterface:
             cls = int(data.pop(0))
             self.y.append(cls)
 
-            dense_data.append(data)
+            dense_vector.append(data)
 
             for element in data:
                 element = element.split(':')
@@ -181,14 +181,18 @@ class DatasetInterface:
 
         # parse dense matrix X
         self.X = np.zeros((self.n_data, self.n_dim), dtype=float)
-
-        for data in tqdm.tqdm(dense_data, unit='B'):
-            for row_idx, element in enumerate(data):
+        print(dense_vector)
+        for row_idx, data in enumerate(tqdm.tqdm(dense_vector, unit='B')):
+            for element in data:
                 element = element.split(':')
                 idx = int(element[0])
                 value = float(element[1])
 
+                print(row_idx, idx, value)
+
                 self.X[row_idx, idx-1] = value
+
+        print(self.X)
 
     def _load_csv(self):
         self.X = list()
@@ -227,7 +231,7 @@ class DatasetInterface:
         self.X = self.X[remain_index]
         self.y = self.y[remain_index]
 
-    def getXY(self):
+    def get_XY(self):
         return self.data_object.get_XY()
 
     def report(self):

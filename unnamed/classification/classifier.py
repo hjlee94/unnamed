@@ -56,7 +56,7 @@ class Classifier:
     def train(self, data_path, model_path):
         self._init_model()
         self._load_dataset(data_path)
-        (self._X_tra, self._y_tra) = self._dataset.getXY()
+        (self._X_tra, self._y_tra) = self._dataset.get_XY()
         
         self._model.fit(self._X_tra, self._y_tra)
 
@@ -77,7 +77,7 @@ class Classifier:
     def evaluate(self, data_path, n_folds):
         self._init_model()
         self._load_dataset(data_path)
-        X,y = self._dataset.getXY()
+        X,y = self._dataset.get_XY()
 
         kf = StratifiedKFold(n_splits=n_folds, shuffle=True, random_state=25)
         for idx_tra, idx_tes in kf.split(X, y):
@@ -111,7 +111,7 @@ class Classifier:
     def test(self, model_path, data_path):
         self._load_pickle_model(model_path)
         self._load_dataset(data_path)
-        (self._X_tes, self._y_tes) = self._dataset.getXY()
+        (self._X_tes, self._y_tes) = self._dataset.get_XY()
 
         self._model.classes = set(self._y_tes)
 
