@@ -4,16 +4,111 @@ import numpy as np
 import sys
 import tqdm
 
+class DataInstance:
+    def __init__(self, X, y):
+        self.X = np.array(X)
+        self.y = np.array(y)
+
+        self.n_data = self.X.shape[0]
+        self.n_dim = self.X.shape[1]
+
+        self.class_info = dict()
+
+        self.logger = Logger.get_instance()
+
+        self._redefine_y()
+        self._get_class_info()
+
+    def _redefine_y(self):
+        y = self.y
+        classes = np.unique(y)
+
+        n_class = len(classes)
+        new_class = range(n_class)
+
+        for new_cls, old_cls in zip(new_class,classes):
+            idx = np.where(y == old_cls)[0]
+            y[idx] = new_cls
+
+        y = np.array(y, dtype=np.int)
+        self.y = y
+
+    def _get_class_info(self):
+        for cls in set(self.y):
+            idx = np.where(self.y == cls)[0]
+            self.class_info[cls] = len(idx)
+
+    def set_X(self, X):
+        self.X = X
+
+        self.n_data = self.X.shape[0]
+        self.n_dim = self.X.shape[1]
+
+    def set_Y(self, y):
+        self.y = y
+
+        self.class_info = dict()
+        self._get_class_info()
+
+    def get_XY(self):
+        return (self.X, self.y)
+
+    def get_X(self):
+        return self.X
+
+    def get_Y(self):
+        return self.y
+
+    def get_class_info(self):
+        return self.class_info
+
+    def save_instance(self, filename):
+        print('[INFO] Save Instances to %s'%filename)
+        fd = open(filename, 'w')
+
+        for index in range(self.X.shape[0]):
+            fd.write('%d '% self.y[index])
+
+            dimension_indicies = np.where(self.X[index] != 0)[0]
+
+            feature_list = []
+
+            for dimension_index in dimension_indicies:
+                feature_list.append('%d:%f'%(dimension_index+1, self.X[index][dimension_index]))
+
+            fd.write(' '.join(feature_list))
+            fd.write('\n')
+        fd.close()
+
+    def report(self):
+        self.logger.log_i('No. data : %s' % (self.n_data))
+        self.logger.log_i('No. classes : %s' % (len(set(self.y))))
+        self.logger.log_i('No. dim : %s' % (self.n_dim))
+        self.logger.log_i('Matrix shape : %s' % (str(self.X.shape)))
+        self.logger.log_i('No. data in each class : %s' % (str(self.class_info)))
+
+    def __str__(self):
+        s = str()
+        s += '[INFO] No. data : %s\n' % (self.n_data)
+        s += '[INFO] No. classes : %s\n' % (len(set(self.y)))
+        s += '[INFO] No. dim : %s\n' % (self.n_dim)
+        s += '[INFO] Matrix shape : %s\n' % (str(self.X.shape))
+        s += '[INFO] No. data in each class : %s\n' % (str(self.class_info))
+
+        return s
+
 class DatasetInterface:
     EXT_SPARSE = 'spa'
     EXT_CSV = 'csv'
 
-    def __init__(self, filename, label_pos=-1, preprocess_method=None):
+    def __init__(self, filename, label_pos=-1, preprocess_method=None, remove_zero_vector=False):
         self.filename = filename
 
         self.X = None
         self.y = list()
         self.class_info = dict()
+
+        self.data_object = None
 
         self.label_pos = label_pos
 
@@ -21,6 +116,7 @@ class DatasetInterface:
         self.n_dim = 0
 
         self.preprocess_method = preprocess_method
+        self.remove_zero_vector = remove_zero_vector
 
         self.logger = Logger.get_instance()
 
@@ -44,10 +140,13 @@ class DatasetInterface:
             self.logger.log_e('Unknown extension from %s'%filename)
             sys.exit(-1)
 
-        self._get_class_info()
+        if self.remove_zero_vector:
+            self._remove_vector()
 
         if self.preprocess_method is not None:
             self._preprocess()
+
+        self.data_object = DataInstance(self.X, self.y)
 
     def _get_class_info(self):
         for cls in set(self.y):
@@ -83,17 +182,13 @@ class DatasetInterface:
         # parse dense matrix X
         self.X = np.zeros((self.n_data, self.n_dim), dtype=float)
 
-        row_idx = 0
-
         for data in tqdm.tqdm(dense_data, unit='B'):
-            for element in data:
+            for row_idx, element in enumerate(data):
                 element = element.split(':')
                 idx = int(element[0])
                 value = float(element[1])
 
                 self.X[row_idx, idx-1] = value
-
-            row_idx += 1
 
     def _load_csv(self):
         self.X = list()
@@ -115,28 +210,37 @@ class DatasetInterface:
         self.X = np.array(self.X)
         self.y = np.array(self.y)
 
+    def _remove_vector(self):
+        remain_index = list()
+
+        for idx in range(self.X.shape[0]):
+            vector = self.X[idx]
+            zero_count = len(np.where(vector==0)[0])
+
+            if zero_count == self.X.shape[1]:
+                continue
+
+            remain_index.append(idx)
+
+        self.logger.log_i('Removing zero vector...(%s vectors)'%(self.X.shape[0] - len(remain_index)))
+
+        self.X = self.X[remain_index]
+        self.y = self.y[remain_index]
+
     def getXY(self):
-        return (self.X, self.y)
+        return self.data_object.get_XY()
 
     def report(self):
         self.logger.log_i('======== Data Description ========')
         self.logger.log_i('File name : %s' % (self.filename))
-        self.logger.log_i('No. data : %s' % (self.n_data))
-        self.logger.log_i('No. classes : %s' % (len(set(self.y))))
-        self.logger.log_i('No. dim : %s' % (self.n_dim))
-        self.logger.log_i('Matrix shape : %s' % (str(self.X.shape)))
-        self.logger.log_i('No. data in each class : %s' % (str(self.class_info)))
         self.logger.log_i('Data preprocessed by %s' % (self.preprocess_method))
+        self.data_object.report()
 
     def __str__(self):
         s = str()
         s += '======== Data Description ========\n'
         s += 'File name : %s\n'%(self.filename)
-        s += 'No. data : %s\n'%(self.n_data)
-        s += 'No. classes : %s\n'%(len(set(self.y)))
-        s += 'No. dim : %s\n'%(self.n_dim)
-        s += 'Matrix shape : %s\n'%(str(self.X.shape))
-        s += 'No. data in each class : %s\n'%(str(self.class_info))
         s += 'Data preprocessed by %s\n'%(self.preprocess_method)
+        s += str(self.data_object)
 
         return s

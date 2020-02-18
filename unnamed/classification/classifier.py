@@ -14,7 +14,7 @@ class Classifier:
     algorithm_table['mlp'] = DeepNeuralNetwork
     algorithm_table['svc'] = SVC
 
-    def __init__(self, alg_name=None, parameters={}, label_pos=0, preprocess_method=None):
+    def __init__(self, alg_name=None, parameters={}, label_pos=0, preprocess_method=None, remove_zero_vector=False):
         self.alg_name = alg_name
 
         # model
@@ -24,6 +24,7 @@ class Classifier:
         self._dataset = None
         self._label_pos = label_pos
         self._preprocess_method = preprocess_method
+        self._remove_zero_vector = remove_zero_vector
 
         # train set
         self._X_tra = None
@@ -36,7 +37,9 @@ class Classifier:
         self.logger = Logger.get_instance()
 
     def _load_dataset(self, data_path):
-        self._dataset = DatasetInterface(data_path, label_pos=self._label_pos, preprocess_method=self._preprocess_method)
+        self._dataset = DatasetInterface(data_path, label_pos=self._label_pos,
+                                         preprocess_method=self._preprocess_method,
+                                         remove_zero_vector=self._remove_zero_vector)
         self._dataset.report()
 
     def _load_pickle_model(self, model_path):
