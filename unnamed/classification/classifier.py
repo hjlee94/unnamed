@@ -4,6 +4,7 @@ from unnamed.classification.algorithm.mlp import DeepNeuralNetwork
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
 from sklearn.model_selection import StratifiedKFold
+from sklearn.metrics import confusion_matrix
 import numpy as np
 import time
 
@@ -107,6 +108,7 @@ class Classifier:
             self._model.get_score(X_tes, y_tes, metric='prc', mark='test')
 
         self._model.report()
+        self.logger.log_i('\n'+str(confusion_matrix(y_tes, self._model.predict(X_tes))))
 
     def test(self, model_path, data_path):
         self._load_pickle_model(model_path)
