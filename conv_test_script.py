@@ -1,6 +1,6 @@
 from unnamed.classification.interface import DatasetInterface
 from unnamed.network_architecture.transformation.autoencoder import AutoEncoder
-from unnamed.preprocessing import DataPreprocessor
+from unnamed.preprocessing import DataScaler
 from PIL import Image
 import numpy as np
 import glob

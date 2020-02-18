@@ -1,5 +1,6 @@
 from unnamed.preprocessing import DataScaler
 from unnamed.log import Logger
+from torch.utils.data import Dataset
 import numpy as np
 import sys
 import tqdm
@@ -243,3 +244,30 @@ class DatasetInterface:
         s += str(self.data_object)
 
         return s
+
+class NumpyDataset(Dataset):
+    def __init__(self, X, y=None, transform=None):
+        self.X = X
+        self.y = y
+        self.transform = transform
+
+        if y is None:
+            self.has_target = False
+        else:
+            self.has_target = True
+
+    def __len__(self):
+        return self.X.shape[0]
+
+    def __getitem__(self, idx):
+        vector = self.X[idx]
+        target = 0
+
+        if self.has_target:
+            target = self.y[idx]
+
+        if self.transform:
+            vector = self.transform(vector)
+
+        return (vector, target)
+

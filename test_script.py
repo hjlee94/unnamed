@@ -1,11 +1,18 @@
 from unnamed.classification.algorithm.mlp import DeepNeuralNetwork
-from unnamed.classification.interface import DatasetInterface, ModelInterface
-from unnamed.preprocessing import FeatureReducer
+from unnamed.classification.interface import DatasetInterface, ModelInterface, DataInstance
+from unnamed.preprocessing import FeatureReducer, DataSampler
 from sklearn.model_selection import StratifiedKFold
+from sklearn.metrics import confusion_matrix
 
 dd = DatasetInterface('./resource/iris.csv', label_pos=-1, preprocess_method='scale')
 print(dd)
-X, y = dd.getXY()
+X, y = dd.get_XY()
+
+X_sampled, y_sampled = DataSampler(method='random').fit_sample(X,y, n=20000)
+
+obj = DataInstance(X_sampled, y_sampled)
+print(obj)
+X, y = obj.get_XY()
 
 # autoencoder = FeatureReducer('basic')
 # autoencoder.fit(X)
@@ -15,7 +22,7 @@ X, y = dd.getXY()
 # X_inverse_transformed = autoencoder.inverse_transform(X_transformed)
 # print(X_inverse_transformed)
 
-model = ModelInterface(DeepNeuralNetwork('basic'))
+model = ModelInterface(DeepNeuralNetwork())
 kf = StratifiedKFold(n_splits=3, shuffle=True, random_state=25)
 for idx_tra, idx_tes in kf.split(X, y):
 
@@ -45,3 +52,4 @@ for idx_tra, idx_tes in kf.split(X, y):
     model.get_score(X_tes, y_tes, metric='prc', mark='test')
 
 model.report()
+print('\n'+str(confusion_matrix(y_tes, model.predict(X_tes))))

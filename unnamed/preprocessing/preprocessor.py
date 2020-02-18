@@ -1,7 +1,64 @@
-from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from unnamed.preprocessing.algorithm.autoencoder import BasicAutoEncoder, ConvolutionalAutoEncoder
+from unnamed.log import Logger
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
 import numpy as np
 import pickle
+
+class DataSampler:
+    def __init__(self, method, random_state=20):
+        self.X = None
+        self.y = None
+        self.unique_cls = None
+        self.method = method
+        self.logger = Logger.get_instance()
+
+        self.random_state = 20
+
+        np.random.seed(self.random_state)
+
+    def fit(self, X, y):
+        self.X = X
+        self.y = y
+
+        self.unique_cls = np.unique(self.y)
+
+    def fit_sample(self, X, y, n):
+        self.fit(X, y)
+
+        resampled_set = None
+
+        if self.method == 'random':
+            resampled_set = self.random_sampling(n)
+        else:
+            self.logger.log_e('wrong method')
+
+        return resampled_set
+
+    def random_sampling(self, n, replace_allow=False):
+        sample_candidate = list()
+
+        for cls in self.unique_cls:
+            candidate = np.where(self.y == cls)[0]
+
+            replace = False
+
+            if replace_allow:
+                if len(candidate) < n:
+                    replace = True
+            else:
+                if len(candidate) < n:
+                    n = len(candidate)
+
+            self.logger.log_i('%d-class sampled %d from %d with replace:%s'%(cls, n, len(candidate), str(replace)))
+
+            np.random.seed(1)
+            idx = np.random.choice(candidate, n, replace=replace)
+            sample_candidate += list(idx)
+
+        X_sampled = self.X[sample_candidate]
+        y_sampled = self.y[sample_candidate]
+
+        return (X_sampled, y_sampled)
 
 class DataScaler:
     preprocessor_table = dict()
