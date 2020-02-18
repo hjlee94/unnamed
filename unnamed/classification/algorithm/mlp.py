@@ -83,10 +83,10 @@ class DeepNeuralNetwork:
 
         return outputs
 
-    # def predict_proba(self, X):
-    #     outputs = self._predict(X)
-    #
-    #     return outputs
+    def predict_proba(self, X):
+        outputs = self._predict(X)
+
+        return outputs
 
     def save_model(self, model_path):
         torch.save(self._model.state_dict(), model_path)
