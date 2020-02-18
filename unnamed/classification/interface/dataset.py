@@ -181,18 +181,13 @@ class DatasetInterface:
 
         # parse dense matrix X
         self.X = np.zeros((self.n_data, self.n_dim), dtype=float)
-        print(dense_vector)
         for row_idx, data in enumerate(tqdm.tqdm(dense_vector, unit='B')):
             for element in data:
                 element = element.split(':')
                 idx = int(element[0])
                 value = float(element[1])
 
-                print(row_idx, idx, value)
-
                 self.X[row_idx, idx-1] = value
-
-        print(self.X)
 
     def _load_csv(self):
         self.X = list()
