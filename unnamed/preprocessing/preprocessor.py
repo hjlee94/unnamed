@@ -34,22 +34,23 @@ class DataSampler:
 
         return resampled_set
 
-    def random_sampling(self, n, replace_allow=False):
+    def random_sampling(self, n_target_samples, replace_allow=False):
         sample_candidate = list()
 
         for cls in self.unique_cls:
             candidate = np.where(self.y == cls)[0]
+            n_samples = n_target_samples
 
             replace = False
 
             if replace_allow:
-                if len(candidate) < n:
+                if len(candidate) < n_target_samples:
                     replace = True
             else:
-                if len(candidate) < n:
-                    n = len(candidate)
+                if len(candidate) < n_target_samples:
+                    n_samples = len(candidate)
 
-            self.logger.log_i('%d-class sampled %d from %d with replace:%s'%(cls, n, len(candidate), str(replace)))
+            self.logger.log_i('%d-class sampled %d from %d with replace:%s'%(cls, n_samples, len(candidate), str(replace)))
 
             np.random.seed(1)
             idx = np.random.choice(candidate, n, replace=replace)

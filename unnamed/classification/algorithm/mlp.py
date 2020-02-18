@@ -37,7 +37,7 @@ class DeepNeuralNetwork:
         train_loader = DataLoader(dataset, batch_size=self._batch_size)
 
         criterion = nn.CrossEntropyLoss()
-        optimizer = torch.optim.Adam(self._model.parameters(), lr=self._learning_rate, weight_decay=1e-5)
+        optimizer = torch.optim.SGD(self._model.parameters(), lr=self._learning_rate, momentum=0.7, nesterov=True, weight_decay=1e-5)
 
         for epoch in range(self._num_epoch):
             for batch_index, (x, y) in enumerate(train_loader):
