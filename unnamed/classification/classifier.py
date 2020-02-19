@@ -1,6 +1,7 @@
-from unnamed.classification.interface import ModelInterface, DatasetInterface
-from unnamed.log import Logger
+from unnamed.classification.interface import ModelInterface, DatasetInterface, DataInstance
 from unnamed.classification.algorithm.mlp import DeepNeuralNetwork
+from unnamed.preprocessing import FeatureReducer, DataSampler
+from unnamed.log import Logger
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
 from sklearn.model_selection import StratifiedKFold
@@ -15,7 +16,7 @@ class Classifier:
     algorithm_table['mlp'] = DeepNeuralNetwork
     algorithm_table['svc'] = SVC
 
-    def __init__(self, alg_name=None, parameters={}, label_pos=0, preprocess_method=None, remove_zero_vector=False):
+    def __init__(self, alg_name=None, parameters={}, n_samples=0, label_pos=0, preprocess_method=None, remove_zero_vector=False):
         self.alg_name = alg_name
 
         # model
@@ -24,6 +25,7 @@ class Classifier:
 
         self._dataset = None
         self._label_pos = label_pos
+        self._n_samples = n_samples
         self._preprocess_method = preprocess_method
         self._remove_zero_vector = remove_zero_vector
 
@@ -79,6 +81,13 @@ class Classifier:
         self._init_model()
         self._load_dataset(data_path)
         X,y = self._dataset.get_XY()
+
+        if self._n_samples > 0:
+            X_sampled, y_sampled = DataSampler(method='random').fit_sample(X, y, n=self._n_samples)
+
+            obj = DataInstance(X_sampled, y_sampled)
+            print(obj)
+            X, y = obj.get_XY()
 
         kf = StratifiedKFold(n_splits=n_folds, shuffle=True, random_state=25)
         for idx_tra, idx_tes in kf.split(X, y):
