@@ -5,11 +5,12 @@ import numpy as np
 import pickle
 
 class DataSampler:
-    def __init__(self, method, random_state=20):
+    def __init__(self, method, replace_allow=False, random_state=20):
         self.X = None
         self.y = None
         self.unique_cls = None
         self.method = method
+        self.replace_allow = replace_allow
         self.logger = Logger.get_instance()
 
         self.random_state = 20
@@ -34,7 +35,7 @@ class DataSampler:
 
         return resampled_set
 
-    def random_sampling(self, n_target_samples, replace_allow=False):
+    def random_sampling(self, n_target_samples):
         sample_candidate = list()
 
         for cls in self.unique_cls:
@@ -43,7 +44,7 @@ class DataSampler:
 
             replace = False
 
-            if replace_allow:
+            if self.replace_allow:
                 if len(candidate) < n_target_samples:
                     replace = True
             else:

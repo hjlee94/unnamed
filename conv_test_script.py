@@ -1,5 +1,5 @@
 from unnamed.classification.interface import DatasetInterface
-from unnamed.network_architecture.transformation.autoencoder import AutoEncoder
+from unnamed.preprocessing import FeatureReducer
 from unnamed.preprocessing import DataScaler
 from PIL import Image
 import numpy as np
@@ -36,7 +36,7 @@ def to_image(x, name):
 
 X = load_data('D:/dogs-vs-cats/train//train//cat.*.jpg')
 
-autoencoder = AutoEncoder('conv')
+autoencoder = FeatureReducer('conv')
 autoencoder.fit(X)
 
 X_transformed = autoencoder.transform(X)
