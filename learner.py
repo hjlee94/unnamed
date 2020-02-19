@@ -107,6 +107,8 @@ def evaluate():
     parser.add_argument('-i', '--input', required=True, type=str, help='feature data (csv or spa) file path')
     parser.add_argument('-a', '--algorithm', required=True, type=str, help='classification algorithm')
     parser.add_argument('-k', '--kfolds', required=False, default=3, type=int, help='k-folds')
+    parser.add_argument('-n', '--nsamples', required=False, default=0, type=int,
+                        help='n_sample for random sampling')
     parser.add_argument('-l', '--label', required=False, default=0, type=int, help='label index offset')
     parser.add_argument('-p', '--preprocessing', required=False, default=None, type=str, help='data preprocessing method(scale | minmax)')
     parser.add_argument('-r', '--removezero', required=False, default=False, type=bool,
@@ -120,8 +122,9 @@ def evaluate():
     label_pos = args['label']
     preprocessing_method = args['preprocessing']
     remove_zero_vector = args['removezero']
+    n_samples = args['nsamples']
 
-    classifier = Classifier(algorithm, parameters, label_pos=label_pos, preprocess_method=preprocessing_method, remove_zero_vector=remove_zero_vector)
+    classifier = Classifier(algorithm, parameters, n_samples=n_samples, label_pos=label_pos, preprocess_method=preprocessing_method, remove_zero_vector=remove_zero_vector)
     classifier.evaluate(data_path, n_folds)
 
 def main():
