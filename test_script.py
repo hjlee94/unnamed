@@ -3,8 +3,9 @@ from unnamed.classification.interface import DatasetInterface, ModelInterface, D
 from unnamed.preprocessing import FeatureReducer, DataSampler
 from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import confusion_matrix
+import sys
 
-dd = DatasetInterface('./resource/iris.csv', label_pos=-1, preprocess_method='scale')
+dd = DatasetInterface(sys.argv[1], label_pos=-1, preprocess_method='scale', remove_zero_vector=True)
 print(dd)
 X, y = dd.get_XY()
 
@@ -22,7 +23,7 @@ X, y = obj.get_XY()
 # X_inverse_transformed = autoencoder.inverse_transform(X_transformed)
 # print(X_inverse_transformed)
 
-model = ModelInterface(DeepNeuralNetwork())
+model = ModelInterface(DeepNeuralNetwork(num_epoch=1000, batch_size=512))
 kf = StratifiedKFold(n_splits=3, shuffle=True, random_state=25)
 for idx_tra, idx_tes in kf.split(X, y):
 
@@ -31,7 +32,7 @@ for idx_tra, idx_tes in kf.split(X, y):
     X_tes = X[idx_tes]
     y_tes = y[idx_tes]
 
-    model.fit(X_tra, y_tra)
+    model.fit(X_tra, y_tra, validation_set=(X_tes, y_tes))
 
     model.get_score(X_tra, y_tra, metric='acc', mark='train')
     model.get_score(X_tra, y_tra, metric='err', mark='train')

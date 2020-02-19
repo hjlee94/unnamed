@@ -5,6 +5,7 @@ from torch.autograd import Variable
 from torch import nn
 import numpy as np
 import torch
+import time
 
 
 class DeepNeuralNetwork:
@@ -17,7 +18,7 @@ class DeepNeuralNetwork:
 
         self.gpu_available = torch.cuda.is_available()
 
-    def fit(self, X, y):
+    def fit(self, X, y, validation_set=None):
         n_features = X.shape[1]
         n_cls = len(np.unique(y))
 
@@ -37,10 +38,11 @@ class DeepNeuralNetwork:
         train_loader = DataLoader(dataset, batch_size=self._batch_size)
 
         criterion = nn.CrossEntropyLoss()
-        # optimizer = torch.optim.SGD(self._model.parameters(), lr=self._learning_rate, momentum=0.7, nesterov=True, weight_decay=1e-5)
         optimizer = torch.optim.Adam(self._model.parameters(), lr=self._learning_rate)
 
         for epoch in range(self._num_epoch):
+            s0 = time.time()
+
             for batch_index, (x, y) in enumerate(train_loader):
                 outputs = self._model(x)
                 loss = criterion(outputs, y)
@@ -48,7 +50,21 @@ class DeepNeuralNetwork:
                 loss.backward()
                 optimizer.step()
 
-            print('epoch [{}/{}], loss:{:.4f}'.format(epoch + 1, self._num_epoch, loss.data.item()))
+            e0 = time.time()
+            elapsed_time = e0 - s0
+
+            if validation_set:
+                X_tes = validation_set[0]
+                y_tes = validation_set[1]
+
+                y_pred = self.predict(X_tes)
+                test_acc = np.mean(y_pred == y_tes)
+
+                print('epoch [{}/{}], loss:{:.4f}, test_acc:{:.3f}, elapsed_time:{:.2f}'.format(
+                    epoch + 1, self._num_epoch, loss.data.item(), test_acc, elapsed_time))
+            else:
+                print('epoch [{}/{}], loss:{:.4f}, elapsed_time:{:.2f}'.format(
+                    epoch + 1, self._num_epoch, loss.data.item(), elapsed_time))
 
     def _predict(self, X):
         X = torch.from_numpy(X)

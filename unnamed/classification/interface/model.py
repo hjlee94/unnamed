@@ -120,14 +120,14 @@ class ModelInterface:
         self.metric = Metric()
         self.logger = Logger.get_instance()
 
-    def fit(self, X_tra, y_tra):
+    def fit(self, X_tra, y_tra, **kwargs):
         self.X_tra = X_tra
         self.y_tra = y_tra
 
         self.classes = set(self.y_tra)
 
         s0 = time.time()
-        self.model.fit(self.X_tra, self.y_tra)
+        self.model.fit(self.X_tra, self.y_tra, **kwargs)
         e0 = time.time()
 
         training_time = e0 - s0
