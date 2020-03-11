@@ -117,6 +117,8 @@ class WindowEntropyMap(_BinaryFeature):
         (entropy_list, histogram_list) = self._slide_window(input_data)
 
         output_data = self._map_value(entropy_list, histogram_list)
+        output_data = output_data.reshape(1,-1)
+        output_data = output_data.ravel()
 
         return output_data
 

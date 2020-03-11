@@ -6,18 +6,20 @@ class _DeepNeuralNetworkArchitecture(nn.Module):
         super().__init__()
         self.n_features = n_features
         self.n_out = n_out
-
         self.layer_stack = nn.Sequential(
+            nn.Linear(self.n_features, 512),
             nn.Dropout(p=0.1),
-            nn.Linear(self.n_features, 1024),
             nn.PReLU(),
+
+            nn.Linear(512, 512),
             nn.Dropout(p=0.1),
-            nn.Linear(1024, 1024),
             nn.PReLU(),
+
+            nn.Linear(512, self.n_out),
             nn.Dropout(p=0.1),
-            nn.Linear(1024, self.n_out),
             nn.Sigmoid()
         )
+
         self._init_weights()
 
     def forward(self, x):

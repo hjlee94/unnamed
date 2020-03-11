@@ -13,14 +13,14 @@ class FeatureExtractor:
         'wem': WindowEntropyMap
     }
 
-    feature_unit = UniGramMatrix
-
     @staticmethod
-    def extract_parallel(input_path):
+    def extract_parallel(data):
+        input_path, feature_unit = data
+
         file_name = ""
         try:
             file_name = os.path.basename(input_path)
-            vector = FeatureExtractor.feature_unit().fit_transform(input_path)
+            vector = feature_unit.fit_transform(input_path)
 
         except Exception as e:
             return [False, file_name, e]
@@ -43,7 +43,7 @@ class FeatureExtractor:
 
         self.logger = Logger.get_instance()
 
-        FeatureExtractor.feature_unit = FeatureExtractor.feature_table[feature]
+        self.feature_unit = FeatureExtractor.feature_table[feature]
 
     def _retrieve(self, dir_path):
         dir_path = os.path.join(dir_path, '*')
@@ -82,9 +82,11 @@ class FeatureExtractor:
 
     def _extract_feature(self, data_list):
         feature_list = list()
+        n_total = len(data_list)
+        data_list = map(lambda x: (x, self.feature_unit()), data_list)
 
         # It should be imap not imap_unordered. Sequence must be preserved.
-        for res in tqdm.tqdm(self.pool.imap(FeatureExtractor.extract_parallel, data_list), total=len(data_list)):
+        for res in tqdm.tqdm(self.pool.imap(FeatureExtractor.extract_parallel, data_list), total=n_total):
             is_success = res[0]
             file_name = res[1]
             result = res[2]
