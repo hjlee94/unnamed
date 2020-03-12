@@ -1,8 +1,7 @@
 from unnamed.classification.interface.dataset import DatasetInterface, DataInstance
-from unnamed.preprocessing.preprocessor import FeatureReducer
 from unnamed.preprocessing.algorithm.autoencoder import BasicAutoEncoder
 
-dd = DatasetInterface('./resource/wem_2048_128_32.spa', preprocess_method='scale')
+dd = DatasetInterface('./resource/wem.spa', preprocess_method='scale')
 print(dd)
 X, y = dd.get_XY()
 
@@ -19,7 +18,7 @@ print(X_transformed.shape)
 
 # new_dd = DataInstance(X_transformed.reshape((X_transformed.shape[0], 108)), y)
 new_dd = DataInstance(X_transformed, y)
-new_dd.save_instance('./resource/wem_2048_128_32_transformed.spa')
+new_dd.save_instance('./resource/wem_transformed.spa')
 
 X_inverse_transformed = autoencoder.inverse_transform(X_transformed)
 

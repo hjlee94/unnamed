@@ -110,7 +110,6 @@ class WindowEntropyMap(_BinaryFeature):
             entropy_value = self._get_entropy(byte_frequency)
 
             byte_histogram = np.sum(byte_histogram.reshape(self.maxtrix_size, -1), axis=1)
-            print(byte_histogram)
 
             histogram_list.append(byte_histogram)
             entropy_list.append(entropy_value)

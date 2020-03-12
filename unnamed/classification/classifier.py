@@ -1,4 +1,5 @@
-from unnamed.classification.interface import ModelInterface, DatasetInterface, DataInstance
+from unnamed.classification.interface.dataset import DatasetInterface, DataInstance
+from unnamed.classification.interface.model import ModelInterface
 from unnamed.classification.algorithm.mlp import DeepNeuralNetwork
 from unnamed.preprocessing import FeatureReducer, DataSampler
 from unnamed.log import Logger

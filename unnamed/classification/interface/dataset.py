@@ -1,4 +1,3 @@
-from unnamed.preprocessing import DataScaler
 from unnamed.log import Logger
 from torch.utils.data import Dataset
 import numpy as np
@@ -124,6 +123,8 @@ class DatasetInterface:
         self._load_data()
 
     def _preprocess(self):
+        from unnamed.preprocessing import DataScaler
+
         self.preprocessor = DataScaler(self.preprocess_method)
         self.X = self.preprocessor.fit_transform(self.X)
 

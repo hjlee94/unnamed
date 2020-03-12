@@ -1,5 +1,6 @@
 from unnamed.classification.algorithm.mlp import DeepNeuralNetwork
-from unnamed.classification.interface import DatasetInterface, ModelInterface, DataInstance
+from unnamed.classification.interface.dataset import DatasetInterface, DataInstance
+from unnamed.classification.interface.model import ModelInterface
 from unnamed.preprocessing import FeatureReducer, DataSampler
 from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import confusion_matrix

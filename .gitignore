@@ -134,3 +134,4 @@ dmypy.json
 .idea/unnamed.iml
 .idea/vcs.xml
 .idea/workspace.xml
+*.bmp
