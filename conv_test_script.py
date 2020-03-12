@@ -1,4 +1,4 @@
-from unnamed.classification.interface import DatasetInterface
+from unnamed.classification.interface.dataset import DatasetInterface, DataInstance
 from unnamed.preprocessing import FeatureReducer
 from unnamed.preprocessing import DataScaler
 from PIL import Image
