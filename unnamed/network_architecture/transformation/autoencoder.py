@@ -10,23 +10,23 @@ class _AutoEncoderArchitecture(nn.Module):
         self.n_hidden = n_hidden
 
         self.encoder = nn.Sequential(
-            nn.Linear(self.n_features, 128),
+            nn.Linear(self.n_features, 512),
             nn.ReLU(True),
-            nn.Linear(128, 64),
+            nn.Linear(512, 256),
             nn.ReLU(True),
-            nn.Linear(64, 12),
+            nn.Linear(256, 128),
             nn.ReLU(True),
-            nn.Linear(12, self.n_hidden)
+            nn.Linear(128, self.n_hidden)
         )
 
         self.decoder = nn.Sequential(
-            nn.Linear(self.n_hidden, 12),
+            nn.Linear(self.n_hidden, 128),
             nn.ReLU(True),
-            nn.Linear(12, 64),
+            nn.Linear(128, 256),
             nn.ReLU(True),
-            nn.Linear(64, 128),
+            nn.Linear(256, 512),
             nn.ReLU(True),
-            nn.Linear(128, self.n_features),
+            nn.Linear(512, self.n_features),
             nn.Tanh()
         )
 
