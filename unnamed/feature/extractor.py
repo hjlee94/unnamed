@@ -1,4 +1,5 @@
 from unnamed.feature.binary import *
+from unnamed.error.exceptions import *
 from unnamed.log import Logger
 from multiprocessing import Pool, cpu_count
 import tqdm
@@ -27,6 +28,26 @@ class FeatureExtractor:
 
         return [True, file_name, vector]
 
+    @staticmethod
+    def feature_to_sparse(label, vector):
+        non_zero_index = np.where(vector != 0)[0]
+
+        spa_formatted_string = ['%d'%label]
+
+        for index in sorted(non_zero_index):
+            value = vector[index]
+            spa_formatted_string.append('%d:%d'%(index + 1, value))
+
+        spa_formatted_string = '%s\n'%(' '.join(spa_formatted_string))
+        return spa_formatted_string
+
+    @staticmethod
+    def feature_to_csv(label, vector):
+        vector = list(map(str, vector))
+        vector = ','.join(vector)
+        csv_formatted_string = '%d,%s\n' % (label, vector)
+
+        return csv_formatted_string
 
     def __init__(self, input_path, output_path, feature, batch_size=256, n_jobs=1):
         self._input_path = input_path
@@ -101,15 +122,24 @@ class FeatureExtractor:
     def _collect(self, feature_list, label_list):
         fd = open(self._output_path, 'a+')
 
+        file_extension = os.path.basename(self._output_path).split('.')[-1].lower()
+
+        if file_extension == 'spa':
+            format_type = FeatureExtractor.feature_to_sparse
+        elif file_extension == 'csv':
+            format_type = FeatureExtractor.feature_to_csv
+        else:
+            raise UndefinedExtension(file_extension)
+
         n_data = len(feature_list)
 
         for i in range(n_data):
             label = label_list[i]
             vector = feature_list[i]
-            vector = list(map(str, vector))
-            vector = ','.join(vector)
 
-            fd.write('%d,%s\n'%(label, vector))
+            formatted_string = format_type(label, vector)
+
+            fd.write(formatted_string)
 
         fd.close()
 

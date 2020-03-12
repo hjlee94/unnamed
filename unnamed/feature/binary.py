@@ -61,6 +61,9 @@ class TwoGramMatrix(_BinaryFeature):
 
             output_data[row_byte, col_byte] += 1
 
+        output_data = output_data.reshape(1, -1)
+        output_data = output_data.ravel()
+
         return output_data
 
 
@@ -68,8 +71,8 @@ class WindowEntropyMap(_BinaryFeature):
     def __init__(self):
         super().__init__()
 
-        self.step_size = 1024
-        self.window_size = 2048
+        self.step_size = 256
+        self.window_size = 1024
         self.maxtrix_size = 32
         self.row_size = np.round(float(8.1) / self.maxtrix_size, 4)
 
@@ -107,6 +110,7 @@ class WindowEntropyMap(_BinaryFeature):
             entropy_value = self._get_entropy(byte_frequency)
 
             byte_histogram = np.sum(byte_histogram.reshape(self.maxtrix_size, -1), axis=1)
+            print(byte_histogram)
 
             histogram_list.append(byte_histogram)
             entropy_list.append(entropy_value)
@@ -124,4 +128,6 @@ class WindowEntropyMap(_BinaryFeature):
 
 
 if __name__ == '__main__':
-    print(WindowEntropyMap().fit_transform('C:\\Users\\lhj\\please.etl'))
+    vector = WindowEntropyMap().fit_transform('C:\\Users\\lhj\\Documents\\GitHub\\unnamed\\resource\\data\\TAB\\0\\result_0_0.bmp')
+    print(list(vector.reshape((32,-1))))
+    print()
