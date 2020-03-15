@@ -126,7 +126,7 @@ class ConvolutionalAutoEncoder(BaseAutoEncoder):
         train_loader = DataLoader(dataset, batch_size=self._batch_size)
 
         criterion = nn.MSELoss()
-        optimizer = torch.optim.Adam(self._model.parameters(), lr=self._learning_rate, weight_decay=1e-15)
+        optimizer = torch.optim.Adam(self._model.parameters(), lr=self._learning_rate)
 
         for epoch in range(self._num_epoch):
             s0 = time.time()

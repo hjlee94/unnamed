@@ -55,7 +55,6 @@ class FeatureExtractor:
         self._n_jobs = n_jobs
 
         self._batch_size = batch_size
-        self._n_cls = 0
 
         if self._n_jobs > cpu_count():
             self._n_jobs = cpu_count()
@@ -86,6 +85,8 @@ class FeatureExtractor:
 
         data_list = list()
         label_list = list()
+
+        self._n_cls = 0
 
         for dir_name in sorted(dir_names):
             dir_path = os.path.join(input_path, dir_name)

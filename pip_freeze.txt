@@ -1,0 +1,10 @@
+joblib==0.14.1
+lightgbm==2.3.1
+numpy==1.18.1
+Pillow==7.0.0
+scikit-learn==0.22.1
+scipy==1.4.1
+six==1.14.0
+sklearn==0.0
+tqdm==4.41.1
+xgboost==0.90

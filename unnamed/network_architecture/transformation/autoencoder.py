@@ -47,22 +47,22 @@ class _ConvolutionalAutoEncodeArchitecture(nn.Module):
         super().__init__()
 
         self.encoder = nn.Sequential(
-            nn.Conv2d(3, 16, 5, stride=1, padding=0),  # b, 16, 10, 10
+            nn.Conv2d(1, 3, 5, stride=1, padding=0),  # b, 16, 10, 10
             nn.ReLU(True),
             nn.MaxPool2d(2, stride=2),  # b, 16, 5, 5
 
-            nn.Conv2d(16, 3, 3, stride=1, padding=0),  # b, 8, 3, 3
+            nn.Conv2d(3, 5, 3, stride=1, padding=0),  # b, 8, 3, 3
             nn.ReLU(True),
             nn.MaxPool2d(2, stride=2)  # b, 8, 2, 2
         )
         self.decoder = nn.Sequential(
-            nn.ConvTranspose2d(3, 16, 5, stride=2, padding=0),  # b, 16, 5, 5
+            nn.ConvTranspose2d(5, 3, 5, stride=2, padding=0),  # b, 16, 5, 5
             nn.ReLU(True),
             #
-            nn.ConvTranspose2d(16, 6, 3, stride=2, padding=0),  # b, 8, 15, 15
+            nn.ConvTranspose2d(3, 1, 3, stride=2, padding=0),  # b, 8, 15, 15
             nn.ReLU(True),
             #
-            nn.ConvTranspose2d(6, 3, 2, stride=1, padding=0),  # b, 3, 28, 28
+            nn.ConvTranspose2d(1, 1, 2, stride=1, padding=0),  # b, 3, 28, 28
             nn.Sigmoid()
         )
 

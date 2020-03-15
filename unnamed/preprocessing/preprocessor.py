@@ -104,14 +104,13 @@ class DataScaler:
         self.encoder = pickle.load(fd)
         fd.close()
 
-
 class FeatureReducer:
     preprocessor_table = dict()
     preprocessor_table['basic'] = BasicAutoEncoder
     preprocessor_table['conv'] = ConvolutionalAutoEncoder
 
-    def __init__(self, preprocess_method):
-        self.encoder = FeatureReducer.preprocessor_table[preprocess_method.lower()]()
+    def __init__(self, preprocess_method, **parameters):
+        self.encoder = FeatureReducer.preprocessor_table[preprocess_method.lower()](**parameters)
         self.X = None
 
     def get_encoder_name(self):

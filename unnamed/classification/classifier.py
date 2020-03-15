@@ -1,20 +1,27 @@
 from unnamed.classification.interface.dataset import DatasetInterface, DataInstance
 from unnamed.classification.interface.model import ModelInterface
 from unnamed.classification.algorithm.mlp import DeepNeuralNetwork
-from unnamed.preprocessing import FeatureReducer, DataSampler
-from unnamed.log import Logger
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.svm import SVC
+from unnamed.preprocessing import FeatureReducer, DataSampler, DataScaler
 from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import confusion_matrix
-import numpy as np
-import time
+from unnamed.log import Logger
+
+from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.tree import DecisionTreeClassifier
+from xgboost import XGBClassifier
+from sklearn.svm import SVC
+from lightgbm.sklearn import LGBMClassifier
 
 
 class Classifier:
     algorithm_table = dict()
     algorithm_table['random_forest'] = RandomForestClassifier
+    algorithm_table['adaboost'] = AdaBoostClassifier
+    algorithm_table['xgboost'] = XGBClassifier
+    algorithm_table['lightgbm'] = LGBMClassifier
     algorithm_table['mlp'] = DeepNeuralNetwork
+    algorithm_table['knn'] = KNeighborsClassifier
     algorithm_table['svc'] = SVC
 
     def __init__(self, alg_name=None, parameters={}, n_samples=0, label_pos=0, preprocess_method=None, remove_zero_vector=False):
@@ -40,10 +47,23 @@ class Classifier:
         
         self.logger = Logger.get_instance()
 
+        self._reorganize_parameter()
+
+    def _reorganize_parameter(self):
+        if self.alg_name == 'adaboost' and 'max_depth' in self._parameters:
+            max_depth = self._parameters.pop('max_depth')
+            self._parameters['base_estimator'] = DecisionTreeClassifier(max_depth=max_depth)
+
+
     def _load_dataset(self, data_path):
         self._dataset = DatasetInterface(data_path, label_pos=self._label_pos,
-                                         preprocess_method=self._preprocess_method,
                                          remove_zero_vector=self._remove_zero_vector)
+
+        if self._preprocess_method:
+            X,y = self._dataset.get_XY()
+            X = DataScaler(self._preprocess_method).fit_transform(X)
+            self._dataset.data_object.set_X(X)
+
         self._dataset.report()
 
     def _load_pickle_model(self, model_path):

@@ -1,7 +1,7 @@
-from unnamed.log import Logger
 from torch.utils.data import Dataset
+from unnamed.log import Logger
+from unnamed.error.exceptions import UndefinedExtension
 import numpy as np
-import sys
 import tqdm
 
 class DataInstance:
@@ -101,7 +101,7 @@ class DatasetInterface:
     EXT_SPARSE = 'spa'
     EXT_CSV = 'csv'
 
-    def __init__(self, filename, label_pos=-1, preprocess_method=None, remove_zero_vector=False):
+    def __init__(self, filename, label_pos=0, remove_zero_vector=False):
         self.filename = filename
 
         self.X = None
@@ -115,18 +115,12 @@ class DatasetInterface:
         self.n_data = 0
         self.n_dim = 0
 
-        self.preprocess_method = preprocess_method
         self.remove_zero_vector = remove_zero_vector
 
         self.logger = Logger.get_instance()
 
         self._load_data()
 
-    def _preprocess(self):
-        from unnamed.preprocessing import DataScaler
-
-        self.preprocessor = DataScaler(self.preprocess_method)
-        self.X = self.preprocessor.fit_transform(self.X)
 
     def _load_data(self):
         self.logger.log_i('Loading %s'%(self.filename))
@@ -140,13 +134,10 @@ class DatasetInterface:
 
         else:
             self.logger.log_e('Unknown extension from %s'%filename)
-            sys.exit(-1)
+            raise UndefinedExtension(filename.split('.')[-1])
 
         if self.remove_zero_vector:
             self._remove_vector()
-
-        if self.preprocess_method is not None:
-            self._preprocess()
 
         self.data_object = DataInstance(self.X, self.y)
 
@@ -234,14 +225,12 @@ class DatasetInterface:
     def report(self):
         self.logger.log_i('======== Data Description ========')
         self.logger.log_i('File name : %s' % (self.filename))
-        self.logger.log_i('Data preprocessed by %s' % (self.preprocess_method))
         self.data_object.report()
 
     def __str__(self):
         s = str()
         s += '======== Data Description ========\n'
         s += 'File name : %s\n'%(self.filename)
-        s += 'Data preprocessed by %s\n'%(self.preprocess_method)
         s += str(self.data_object)
 
         return s
