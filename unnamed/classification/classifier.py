@@ -7,6 +7,7 @@ from sklearn.metrics import confusion_matrix
 from unnamed.log import Logger
 
 from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
+from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
 from xgboost import XGBClassifier
@@ -20,6 +21,7 @@ class Classifier:
     algorithm_table['adaboost'] = AdaBoostClassifier
     algorithm_table['xgboost'] = XGBClassifier
     algorithm_table['lightgbm'] = LGBMClassifier
+    algorithm_table['gaussian_bayes'] = GaussianNB
     algorithm_table['mlp'] = DeepNeuralNetwork
     algorithm_table['knn'] = KNeighborsClassifier
     algorithm_table['svc'] = SVC
