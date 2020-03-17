@@ -8,22 +8,26 @@ class _DeepNeuralNetworkArchitecture(nn.Module):
         self.n_out = n_out
         self.layer_stack = nn.Sequential(
             nn.Linear(self.n_features, 512),
+            nn.Dropout(p=0.1),
             nn.BatchNorm1d(512),
-            # nn.Dropout(p=0.2),
             nn.ReLU(),
 
             nn.Linear(512, 256),
             nn.BatchNorm1d(256),
-            # nn.Dropout(p=0.2),
+            nn.Dropout(p=0.1),
+            nn.ReLU(),
+
+            nn.Linear(256, 256),
+            nn.BatchNorm1d(256),
+            nn.Dropout(p=0.1),
             nn.ReLU(),
 
             nn.Linear(256, 128),
             nn.BatchNorm1d(128),
-            # nn.Dropout(p=0.2),
+            nn.Dropout(p=0.1),
             nn.ReLU(),
 
             nn.Linear(128, self.n_out),
-            # nn.Dropout(p=0.2),
             nn.Softmax()
         )
 

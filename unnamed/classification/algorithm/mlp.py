@@ -39,7 +39,7 @@ class DeepNeuralNetwork:
 
         criterion = nn.CrossEntropyLoss()
         optimizer = torch.optim.SGD(self._model.parameters(), lr=self._learning_rate,
-                                    momentum=0.8, nesterov=True, weight_decay=1e-6)
+                                    momentum=0.7, nesterov=True, weight_decay=1e-5)
 
         for epoch in range(self._num_epoch):
             s0 = time.time()
