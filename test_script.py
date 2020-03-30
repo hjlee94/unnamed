@@ -1,4 +1,4 @@
-from unnamed.classification.algorithm.mlp import DeepNeuralNetwork
+from unnamed.classification.algorithm.cnn import ConvolutionalNeuralNetwork
 from unnamed.classification.interface.dataset import DatasetInterface, DataInstance
 from unnamed.classification.interface.model import ModelInterface
 from unnamed.preprocessing import FeatureReducer, DataSampler, DataScaler
@@ -12,9 +12,13 @@ X, y = dd.get_XY()
 
 X = DataScaler('scale').fit_transform(X)
 
-obj = DataInstance(X, y)
-print(obj)
-X, y = obj.get_XY()
+print(X.shape)
+
+# X_sampled, y_sampled = DataSampler(method='random').fit_sample(X,y, n=20000)
+
+# obj = DataInstance(X_sampled, y_sampled)
+# print(obj)
+# X, y = obj.get_XY()
 
 # autoencoder = FeatureReducer('basic')
 # autoencoder.fit(X)
@@ -24,14 +28,18 @@ X, y = obj.get_XY()
 # X_inverse_transformed = autoencoder.inverse_transform(X_transformed)
 # print(X_inverse_transformed)
 
-model = ModelInterface(DeepNeuralNetwork(num_epoch=1000, learning_rate=0.01, batch_size=256))
+model = ModelInterface(ConvolutionalNeuralNetwork(num_epoch=1000, batch_size=512))
 kf = StratifiedKFold(n_splits=3, shuffle=True, random_state=25)
 for idx_tra, idx_tes in kf.split(X, y):
+    X = X.reshape(X.shape[0],1, 32, 32)
+    print(X.shape)
 
     X_tra = X[idx_tra]
     y_tra = y[idx_tra]
     X_tes = X[idx_tes]
     y_tes = y[idx_tes]
+
+    print(X_tra.shape)
 
     model.fit(X_tra, y_tra, validation_set=(X_tes, y_tes))
 

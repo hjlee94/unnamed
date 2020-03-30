@@ -1,4 +1,4 @@
-from unnamed.network_architecture.classification.mlp import _DeepNeuralNetworkArchitecture
+from unnamed.network_architecture.classification.cnn import _ConvolutionalNeuralNetworkArchitecture
 from unnamed.classification.interface.dataset import NumpyDataset
 from torch.utils.data import Dataset, DataLoader
 from torch.autograd import Variable
@@ -8,21 +8,20 @@ import torch
 import time
 
 
-class DeepNeuralNetwork:
+class ConvolutionalNeuralNetwork:
     def __init__(self, num_epoch=200, batch_size=256, learning_rate=1e-3):
         self._learning_rate = learning_rate
         self._num_epoch = num_epoch
         self._batch_size = batch_size
 
-        self.architecture = _DeepNeuralNetworkArchitecture
+        self.architecture = _ConvolutionalNeuralNetworkArchitecture
 
         self.gpu_available = torch.cuda.is_available()
 
     def fit(self, X, y, validation_set=None):
-        n_features = X.shape[1]
         n_cls = len(np.unique(y))
 
-        self._model = self.architecture(n_features, n_cls)
+        self._model = self.architecture(1, n_cls)
         X = torch.from_numpy(X)
         y = torch.from_numpy(y)
 

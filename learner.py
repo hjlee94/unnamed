@@ -25,7 +25,7 @@ def init_parameters(parameter_args):
         parameter_pair = parameter_pair.lower()
         name, value = parameter_pair.split('=')
 
-        if value.isalpha():
+        if not value.isnumeric():
             value = str(value)
 
         else:
