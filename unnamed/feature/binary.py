@@ -125,6 +125,66 @@ class WindowEntropyMap(_BinaryFeature):
 
         return output_data
 
+class EntropyHistogram(_BinaryFeature):
+    def __init__(self):
+        super().__init__()
+
+        self.step_size = 256
+        self.window_size = 1024
+        self.entropy_level = 1
+        self.row_size = np.round(float(0.7) / self.entropy_level, 4)
+
+    def _map_row_index(self, entropy_sequence):
+        row_indicies = entropy_sequence // self.row_size
+        row_indicies = np.array(row_indicies, dtype=np.uint8)
+
+        return row_indicies
+
+    def _map_value(self, entropy_list):
+        entropy_matrix = np.zeros((self.entropy_level, 256), dtype=float)
+
+        for entropy_sequence in entropy_list:
+            row_indicies = self._map_row_index(entropy_sequence)
+
+            for index in range(256):
+                row_index = row_indicies[index]
+                entropy_matrix[row_index, index] += entropy_sequence[index]
+
+        return entropy_matrix
+
+    def _get_entropy(self, byte_frequency):
+        indicies = np.where(byte_frequency != 0.0)[0]
+        entorpy_sequence = np.zeros_like(byte_frequency)
+
+        for index in indicies:
+            entorpy_sequence[index] = -np.log(byte_frequency[index]) * byte_frequency[index]
+
+        return entorpy_sequence
+
+    def _slide_window(self, byte_sequence):
+        entropy_list = list()
+
+        for i in range(0, len(byte_sequence) - self.window_size + 1, self.step_size):
+            byte_window = byte_sequence[i:i + self.window_size]
+            byte_window = np.array(byte_window)
+
+            byte_histogram = np.histogram(byte_window, bins=256)[0]
+
+            byte_frequency = (byte_histogram / float(np.sum(byte_histogram)))
+            entropy_sequence = self._get_entropy(byte_frequency)
+
+            entropy_list.append(entropy_sequence)
+
+        return entropy_list
+
+    def extract(self, input_data):
+        entropy_list = self._slide_window(input_data)
+        output_data = self._map_value(entropy_list)
+        output_data = output_data.reshape(1,-1)
+        output_data = output_data.ravel()
+
+        return output_data
+
 
 if __name__ == '__main__':
     vector = WindowEntropyMap().fit_transform('C:\\Users\\lhj\\Documents\\GitHub\\unnamed\\resource\\data\\TAB\\0\\result_0_0.bmp')

@@ -28,7 +28,7 @@ print(X.shape)
 # X_inverse_transformed = autoencoder.inverse_transform(X_transformed)
 # print(X_inverse_transformed)
 
-model = ModelInterface(ConvolutionalNeuralNetwork(num_epoch=1000, batch_size=512))
+model = ModelInterface(ConvolutionalNeuralNetwork(num_epoch=1000, batch_size=1024))
 kf = StratifiedKFold(n_splits=3, shuffle=True, random_state=25)
 for idx_tra, idx_tes in kf.split(X, y):
     X = X.reshape(X.shape[0],1, 32, 32)

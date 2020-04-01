@@ -9,7 +9,7 @@ import time
 
 
 class ConvolutionalNeuralNetwork:
-    def __init__(self, num_epoch=200, batch_size=256, learning_rate=1e-3):
+    def __init__(self, num_epoch=200, batch_size=1024, learning_rate=1e-3):
         self._learning_rate = learning_rate
         self._num_epoch = num_epoch
         self._batch_size = batch_size
@@ -37,8 +37,8 @@ class ConvolutionalNeuralNetwork:
         train_loader = DataLoader(dataset, batch_size=self._batch_size)
 
         criterion = nn.CrossEntropyLoss()
-        optimizer = torch.optim.SGD(self._model.parameters(), lr=self._learning_rate,
-                                    momentum=0.8, nesterov=True, weight_decay=1e-6)
+        # optimizer = torch.optim.SGD(self._model.parameters(), lr=self._learning_rate, momentum=0.7, nesterov=True, weight_decay=0.0)
+        optimizer = torch.optim.Adam(self._model.parameters(), lr=self._learning_rate, weight_decay=1e-7)
 
         for epoch in range(self._num_epoch):
             s0 = time.time()

@@ -5,13 +5,15 @@ from multiprocessing import Pool, cpu_count
 import tqdm
 import glob
 import os
+import traceback
 
 
 class FeatureExtractor:
     feature_table = {
         '1-gram': UniGramMatrix,
         '2-gram': TwoGramMatrix,
-        'wem': WindowEntropyMap
+        'wem': WindowEntropyMap,
+        'entropy_histogram': EntropyHistogram
     }
 
     @staticmethod
@@ -24,6 +26,8 @@ class FeatureExtractor:
             vector = feature_unit.fit_transform(input_path)
 
         except Exception as e:
+            e = str(e) + '\n'
+            e += traceback.format_exc()
             return [False, file_name, e]
 
         return [True, file_name, vector]
