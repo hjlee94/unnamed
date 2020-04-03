@@ -2,6 +2,7 @@ from unnamed.classification.interface.dataset import DatasetInterface, DataInsta
 from unnamed.preprocessing.preprocessor import DataScaler, FeatureReducer
 from PIL import Image
 import numpy as np
+import sys, os
 
 
 def complement(x):
@@ -27,9 +28,15 @@ def to_image(x, name):
     # x.show()
     x.save('%s.bmp'%name, "BMP")
 
-dd = DatasetInterface('D:\\Saint_Security\\AML\\wem.csv')
-print(dd)
 
+input_path = sys.argv[1]
+
+file_name = os.path.basename(input_path).split('.')[0]
+file_path = os.path.abspath(input_path).split(os.path.sep)[:-1]
+file_path = os.path.sep.join(file_path)
+
+dd = DatasetInterface(sys.argv[1], label_pos=0, remove_zero_vector=False)
+print(dd)
 X, y = dd.get_XY()
 
 scaler = DataScaler('scale')
@@ -39,7 +46,6 @@ print(X.shape)
 
 X = X.reshape((X.shape[0], 1, 32,32))
 
-
 transformer = FeatureReducer('conv')
 
 transformer.fit(X)
@@ -47,25 +53,13 @@ transformer.fit(X)
 print(X.shape)
 
 X_transformed = transformer.transform(X)
-
 print(X_transformed.shape)
-
-
 new_dd = DataInstance(X_transformed.reshape((X.shape[0], -1)), y)
-new_dd.save_instance('./resource/wem_code_layer.spa')
-
-X_inverse_transformed = transformer.inverse_transform(X_transformed)
-
-print(X_inverse_transformed.shape)
-print(X_inverse_transformed[0])
+new_dd.save_instance(os.path.join(file_path, file_name+'_encoded.csv'))
 
 
-new_dd = DataInstance(X_inverse_transformed.reshape((X.shape[0], -1)), y)
-new_dd.save_instance('./resource/wem_inverse_transformed.csv')
-
-for class_id in range(len(np.unique(y))):
-    data_index = np.where(y == class_id)[0]
-    for i in data_index[:100]:
-        to_image(X[i], 'result/wem/%d/%d-original'%(class_id,i))
-        to_image(X_transformed[i], 'result/wem/%d/%d-transformed'%(class_id,i))
-        to_image(X_inverse_transformed[i], 'result/wem/%d/%d-inverse-transformed'%(class_id,i))
+X_transformed = transformer.inverse_transform(X)
+print(X_transformed.shape)
+X_transformed = scaler.inverse_transform(X_transformed.reshape((X.shape[0], -1)))
+new_dd = DataInstance(X_transformed.reshape((X.shape[0], -1)), y)
+new_dd.save_instance(os.path.join(file_path, file_name+'_decoded.csv'))

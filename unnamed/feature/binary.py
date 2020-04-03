@@ -131,7 +131,7 @@ class EntropyHistogram(_BinaryFeature):
 
         self.step_size = 256
         self.window_size = 1024
-        self.entropy_level = 1
+        self.entropy_level = 4
         self.row_size = np.round(float(0.7) / self.entropy_level, 4)
 
     def _map_row_index(self, entropy_sequence):

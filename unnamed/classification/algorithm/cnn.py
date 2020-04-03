@@ -2,6 +2,7 @@ from unnamed.network_architecture.classification.cnn import _ConvolutionalNeural
 from unnamed.classification.interface.dataset import NumpyDataset
 from torch.utils.data import Dataset, DataLoader
 from torch.autograd import Variable
+from torch.optim.lr_scheduler import StepLR
 from torch import nn
 import numpy as np
 import torch
@@ -37,8 +38,9 @@ class ConvolutionalNeuralNetwork:
         train_loader = DataLoader(dataset, batch_size=self._batch_size)
 
         criterion = nn.CrossEntropyLoss()
-        # optimizer = torch.optim.SGD(self._model.parameters(), lr=self._learning_rate, momentum=0.7, nesterov=True, weight_decay=0.0)
-        optimizer = torch.optim.Adam(self._model.parameters(), lr=self._learning_rate, weight_decay=1e-7)
+        optimizer = torch.optim.SGD(self._model.parameters(), lr=self._learning_rate, momentum=0.5, nesterov=True)
+        # optimizer = torch.optim.Adam(self._model.parameters(), lr=self._learning_rate, weight_decay=1e-7)
+        scheduler = StepLR(optimizer, step_size=20, gamma=0.9)
 
         for epoch in range(self._num_epoch):
             s0 = time.time()
@@ -53,6 +55,8 @@ class ConvolutionalNeuralNetwork:
             e0 = time.time()
             elapsed_time = e0 - s0
 
+            scheduler.step()
+
             if validation_set:
                 X_tes = validation_set[0]
                 y_tes = validation_set[1]
@@ -60,11 +64,11 @@ class ConvolutionalNeuralNetwork:
                 y_pred = self.predict(X_tes)
                 test_acc = np.mean(y_pred == y_tes)
 
-                print('epoch [{}/{}], loss:{:.4f}, test_acc:{:.3f}, elapsed_time:{:.2f}'.format(
-                    epoch + 1, self._num_epoch, loss.data.item(), test_acc, elapsed_time))
+                print('epoch [{}/{}], loss:{:.4f}, test_acc:{:.3f}, elapsed_time:{:.2f}, learning_rate:{:f}'.format(
+                    epoch + 1, self._num_epoch, loss.data.item(), test_acc, elapsed_time, scheduler.get_lr()[0]))
             else:
-                print('epoch [{}/{}], loss:{:.4f}, elapsed_time:{:.2f}'.format(
-                    epoch + 1, self._num_epoch, loss.data.item(), elapsed_time))
+                print('epoch [{}/{}], loss:{:.4f}, elapsed_time:{:.2f}, learning_rate:{:.8f}'.format(
+                    epoch + 1, self._num_epoch, loss.data.item(), elapsed_time, scheduler.get_lr()[0]))
 
     def _predict(self, X):
         X = torch.from_numpy(X)

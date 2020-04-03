@@ -1,6 +1,6 @@
 from unnamed.classification.interface.dataset import DatasetInterface, DataInstance
 from unnamed.classification.interface.model import ModelInterface
-from unnamed.classification.algorithm.mlp import DeepNeuralNetwork
+from unnamed.classification.algorithm.dnn import DeepNeuralNetwork
 from unnamed.preprocessing import FeatureReducer, DataSampler, DataScaler
 from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import confusion_matrix
@@ -22,7 +22,7 @@ class Classifier:
     algorithm_table['xgboost'] = XGBClassifier
     algorithm_table['lightgbm'] = LGBMClassifier
     algorithm_table['gaussian_bayes'] = GaussianNB
-    algorithm_table['mlp'] = DeepNeuralNetwork
+    algorithm_table['dnn'] = DeepNeuralNetwork
     algorithm_table['knn'] = KNeighborsClassifier
     algorithm_table['svc'] = SVC
 

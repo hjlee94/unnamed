@@ -22,47 +22,41 @@ class _ConvolutionalNeuralNetworkArchitecture(nn.Module):
         self.n_out = n_out
 
         self.cnn_layer_stack = nn.Sequential(
-            nn.Conv2d(self.n_channel, 30, 3),
+            nn.Conv2d(self.n_channel, 10, 3),
+            nn.BatchNorm2d(10),
             nn.ReLU(True),
+
+            nn.Conv2d(10, 30, 3),
             nn.BatchNorm2d(30),
+            nn.ReLU(True),
 
             nn.Conv2d(30, 60, 3),
-            nn.ReLU(True),
             nn.BatchNorm2d(60),
-
-            nn.Conv2d(60, 120, 3),
             nn.ReLU(True),
-            nn.BatchNorm2d(120),
 
             nn.MaxPool2d(2, 2),
-            nn.BatchNorm2d(120),
-
-            # nn.Conv2d(6, 16, 3),
-            # nn.MaxPool2d(2, 2),
-            # nn.ReLU(True),
-            # nn.BatchNorm2d(16),
         )
 
         self.linear_layer_stack = nn.Sequential(
-            nn.Linear(120 * 13 * 13, 120),
-            nn.ReLU(True),
-            nn.BatchNorm1d(120),
-            nn.Dropout(0.1),
-
-            nn.Linear(120, 60),
-            nn.ReLU(True),
+            nn.Linear(60 * 13 * 13, 60),
             nn.BatchNorm1d(60),
+            nn.ReLU(True),
             nn.Dropout(0.1),
 
-            nn.Linear(60, self.n_out),
-            nn.Softmax()
+            nn.Linear(60, 30),
+            nn.BatchNorm1d(30),
+            nn.ReLU(True),
+            nn.Dropout(0.1),
+
+            nn.Linear(30, self.n_out),
+            nn.Softmax(dim=1)
         )
 
         # self._init_weights()
 
     def forward(self, x):
         x = self.cnn_layer_stack(x)
-        x = x.view((-1, 120 * 13 * 13))
+        x = x.view((-1, 60 * 13 * 13))
 
         x = self.linear_layer_stack(x)
 

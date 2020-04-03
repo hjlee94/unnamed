@@ -1,4 +1,5 @@
 from unnamed.classification.algorithm.cnn import ConvolutionalNeuralNetwork
+from unnamed.classification.algorithm.dnn import DeepNeuralNetwork
 from unnamed.classification.interface.dataset import DatasetInterface, DataInstance
 from unnamed.classification.interface.model import ModelInterface
 from unnamed.preprocessing import FeatureReducer, DataSampler, DataScaler
@@ -6,12 +7,11 @@ from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import confusion_matrix
 import sys
 
-dd = DatasetInterface(sys.argv[1], label_pos=0, remove_zero_vector=True)
+dd = DatasetInterface(sys.argv[1], label_pos=0, remove_zero_vector=False)
 print(dd)
 X, y = dd.get_XY()
 
 X = DataScaler('scale').fit_transform(X)
-
 print(X.shape)
 
 # X_sampled, y_sampled = DataSampler(method='random').fit_sample(X,y, n=20000)
@@ -28,11 +28,11 @@ print(X.shape)
 # X_inverse_transformed = autoencoder.inverse_transform(X_transformed)
 # print(X_inverse_transformed)
 
-model = ModelInterface(ConvolutionalNeuralNetwork(num_epoch=1000, batch_size=1024))
+model = ModelInterface(ConvolutionalNeuralNetwork(num_epoch=200, batch_size=256, learning_rate=0.1))
 kf = StratifiedKFold(n_splits=3, shuffle=True, random_state=25)
 for idx_tra, idx_tes in kf.split(X, y):
     X = X.reshape(X.shape[0],1, 32, 32)
-    print(X.shape)
+    # print(X.shape)
 
     X_tra = X[idx_tra]
     y_tra = y[idx_tra]

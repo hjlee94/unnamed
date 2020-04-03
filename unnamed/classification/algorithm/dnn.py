@@ -1,7 +1,8 @@
-from unnamed.network_architecture.classification.mlp import _DeepNeuralNetworkArchitecture
+from unnamed.network_architecture.classification.dnn import _DeepNeuralNetworkArchitecture
 from unnamed.classification.interface.dataset import NumpyDataset
 from torch.utils.data import Dataset, DataLoader
 from torch.autograd import Variable
+from torch.optim.lr_scheduler import StepLR
 from torch import nn
 import numpy as np
 import torch
@@ -19,10 +20,15 @@ class DeepNeuralNetwork:
         self.gpu_available = torch.cuda.is_available()
 
     def fit(self, X, y, validation_set=None):
+        def get_lr(optimizer):
+            for param_group in optimizer.param_groups:
+                return param_group['lr']
+
         n_features = X.shape[1]
         n_cls = len(np.unique(y))
 
         self._model = self.architecture(n_features, n_cls)
+
         X = torch.from_numpy(X)
         y = torch.from_numpy(y)
 
@@ -38,21 +44,23 @@ class DeepNeuralNetwork:
         train_loader = DataLoader(dataset, batch_size=self._batch_size)
 
         criterion = nn.CrossEntropyLoss()
-        optimizer = torch.optim.SGD(self._model.parameters(), lr=self._learning_rate,
-                                    momentum=0.8, nesterov=True, weight_decay=1e-6)
+        optimizer = torch.optim.SGD(self._model.parameters(), lr=self._learning_rate, momentum=0.5, nesterov=True)
+        scheduler = StepLR(optimizer, step_size=20, gamma=0.9)
 
         for epoch in range(self._num_epoch):
             s0 = time.time()
 
             for batch_index, (x, y) in enumerate(train_loader):
+                optimizer.zero_grad()
                 outputs = self._model(x)
                 loss = criterion(outputs, y)
-                optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()
 
             e0 = time.time()
             elapsed_time = e0 - s0
+
+            scheduler.step()
 
             if validation_set:
                 X_tes = validation_set[0]
@@ -61,11 +69,11 @@ class DeepNeuralNetwork:
                 y_pred = self.predict(X_tes)
                 test_acc = np.mean(y_pred == y_tes)
 
-                print('epoch [{}/{}], loss:{:.4f}, test_acc:{:.3f}, elapsed_time:{:.2f}'.format(
-                    epoch + 1, self._num_epoch, loss.data.item(), test_acc, elapsed_time))
+                print('epoch [{}/{}], loss:{:.4f}, test_acc:{:.3f}, elapsed_time:{:.2f}, learning_rate:{:f}'.format(
+                    epoch + 1, self._num_epoch, loss.data.item(), test_acc, elapsed_time, scheduler.get_lr()[0]))
             else:
-                print('epoch [{}/{}], loss:{:.4f}, elapsed_time:{:.2f}'.format(
-                    epoch + 1, self._num_epoch, loss.data.item(), elapsed_time))
+                print('epoch [{}/{}], loss:{:.4f}, elapsed_time:{:.2f}, learning_rate:{:.8f}'.format(
+                    epoch + 1, self._num_epoch, loss.data.item(), elapsed_time, scheduler.get_lr()[0]))
 
     def _predict(self, X):
         X = torch.from_numpy(X)
@@ -98,7 +106,6 @@ class DeepNeuralNetwork:
     def predict(self, X):
         outputs = self._predict(X)
         outputs = np.argmax(outputs, axis=1)
-
         return outputs
 
     def predict_proba(self, X):
@@ -108,3 +115,6 @@ class DeepNeuralNetwork:
 
     def save_model(self, model_path):
         torch.save(self._model.state_dict(), model_path)
+
+    def __str__(self):
+        return str(self._model)

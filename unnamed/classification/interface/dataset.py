@@ -62,23 +62,52 @@ class DataInstance:
     def get_class_info(self):
         return self.class_info
 
-    def save_instance(self, filename):
-        print('[INFO] Save Instances to %s'%filename)
+    def save_csv(self, filename):
         fd = open(filename, 'w')
 
         for index in range(self.X.shape[0]):
-            fd.write('%d '% self.y[index])
+            csv_line = list()
+
+            csv_line.append(self.y[index])
+            csv_line += list(self.X[index])
+
+            csv_line = list(map(str, csv_line))
+            csv_line = ','.join(csv_line)
+            fd.write(csv_line)
+            fd.write('\n')
+
+        fd.close()
+
+    def save_spa(self, filename):
+        fd = open(filename, 'w')
+
+        for index in range(self.X.shape[0]):
+            fd.write('%d ' % self.y[index])
 
             dimension_indicies = np.where(self.X[index] != 0)[0]
 
             feature_list = []
 
             for dimension_index in dimension_indicies:
-                feature_list.append('%d:%f'%(dimension_index+1, self.X[index][dimension_index]))
+                feature_list.append('%d:%f' % (dimension_index + 1, self.X[index][dimension_index]))
 
             fd.write(' '.join(feature_list))
             fd.write('\n')
         fd.close()
+
+    def save_instance(self, filename):
+        print('[INFO] Save Instances to %s'%filename)
+        extension = filename.split('.')[-1].lower()
+
+        if extension == 'spa':
+            self.save_spa(filename)
+
+        elif extension == 'csv':
+            self.save_csv(filename)
+
+        else:
+            raise UndefinedExtension(extension)
+
 
     def report(self):
         self.logger.log_i('No. data : %s' % (self.n_data))
@@ -140,11 +169,6 @@ class DatasetInterface:
             self._remove_vector()
 
         self.data_object = DataInstance(self.X, self.y)
-
-    def _get_class_info(self):
-        for cls in set(self.y):
-            idx = np.where(self.y == cls)[0]
-            self.class_info[cls] = len(idx)
 
     def _load_spa(self):
         dense_vector = list()
@@ -260,4 +284,10 @@ class NumpyDataset(Dataset):
             vector = self.transform(vector)
 
         return (vector, target)
+
+if __name__ == '__main__':
+    X = np.array([[1,2,3,4], [5,6,7,8]])
+    y = np.array([0,1])
+
+    DataInstance(X,y).save_csv('test.csv')
 

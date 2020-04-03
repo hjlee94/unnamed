@@ -1,6 +1,7 @@
 from unnamed.network_architecture.transformation.autoencoder import _AutoEncoderArchitecture
 from unnamed.network_architecture.transformation.autoencoder import _ConvolutionalAutoEncodeArchitecture
 from unnamed.classification.interface.dataset import NumpyDataset
+from torch.optim.lr_scheduler import StepLR
 from torch.utils.data import DataLoader
 from torch.autograd import Variable
 from torch import nn
@@ -24,7 +25,7 @@ class BaseAutoEncoder:
         inputs = Variable(X).float()
 
         with torch.no_grad():
-            outputs = self._model.encoder(inputs)
+            outputs, _ = self._model._encode(inputs)
 
         if self.gpu_available:
             outputs = outputs.cpu()
@@ -42,7 +43,7 @@ class BaseAutoEncoder:
         inputs = Variable(X).float()
 
         with torch.no_grad():
-            outputs = self._model.decoder(inputs)
+            outputs = self._model(inputs)
 
         if self.gpu_available:
             outputs = outputs.cpu()
@@ -51,8 +52,26 @@ class BaseAutoEncoder:
 
         return outputs
 
+    # def inverse_transform(self, X):
+    #     X = torch.from_numpy(X)
+    #
+    #     if self.gpu_available:
+    #         X = X.cuda()
+    #
+    #     inputs = Variable(X).float()
+    #
+    #     with torch.no_grad():
+    #         outputs = self._model._decode(inputs)
+    #
+    #     if self.gpu_available:
+    #         outputs = outputs.cpu()
+    #
+    #     outputs = outputs.data.numpy()
+    #
+    #     return outputs
+
 class BasicAutoEncoder(BaseAutoEncoder):
-    def __init__(self, output_size=None, num_epoch=200, batch_size=512, learning_rate=1e-3):
+    def __init__(self, output_size=None, num_epoch=200, batch_size=512, learning_rate=1e-1):
 
         super().__init__()
 
@@ -84,6 +103,8 @@ class BasicAutoEncoder(BaseAutoEncoder):
         criterion = nn.MSELoss()
         optimizer = torch.optim.Adam(self._model.parameters(), lr=self._learning_rate)
 
+        scheduler = StepLR(optimizer, step_size=20, gamma=0.9)
+
         for epoch in range(self._num_epoch):
             s0 = time.time()
 
@@ -95,12 +116,15 @@ class BasicAutoEncoder(BaseAutoEncoder):
                 optimizer.step()
 
             e0 = time.time()
+
+            scheduler.step()
             elapsed_time = e0 - s0
 
-            print('epoch [{}/{}], loss:{:.4f}, elapsed_time:{:.2f}'.format(epoch + 1, self._num_epoch, loss.data.item(), elapsed_time))
+            print('epoch [{}/{}], loss:{:.4f}, elapsed_time:{:.2f}, learning_rate:{:.8f}'.format(
+                epoch + 1, self._num_epoch, loss.data.item(), elapsed_time, scheduler.get_lr()[0]))
 
 class ConvolutionalAutoEncoder(BaseAutoEncoder):
-    def __init__(self, num_epoch=200, batch_size=512, learning_rate=1e-2):
+    def __init__(self, num_epoch=200, batch_size=512, learning_rate=1e-1):
 
         super().__init__()
 
@@ -126,7 +150,9 @@ class ConvolutionalAutoEncoder(BaseAutoEncoder):
         train_loader = DataLoader(dataset, batch_size=self._batch_size)
 
         criterion = nn.MSELoss()
-        optimizer = torch.optim.Adam(self._model.parameters(), lr=self._learning_rate)
+        # optimizer = torch.optim.Adam(self._model.parameters(), lr=self._learning_rate)
+        optimizer = torch.optim.SGD(self._model.parameters(), lr=self._learning_rate, momentum=0.5, nesterov=True)
+        scheduler = StepLR(optimizer, step_size=30, gamma=0.95)
 
         for epoch in range(self._num_epoch):
             s0 = time.time()
@@ -139,7 +165,8 @@ class ConvolutionalAutoEncoder(BaseAutoEncoder):
                 optimizer.step()
 
             e0 = time.time()
+            scheduler.step()
             elapsed_time = e0 - s0
 
-            print('epoch [{}/{}], loss:{:.4f}, elapsed_time:{:.2f}'.format(epoch + 1, self._num_epoch, loss.data.item(),
-                                                                           elapsed_time))
+            print('epoch [{}/{}], loss:{:.4f}, elapsed_time:{:.2f}, learning_rate:{:.8f}'.format(
+                epoch + 1, self._num_epoch, loss.data.item(), elapsed_time, scheduler.get_lr()[0]))
