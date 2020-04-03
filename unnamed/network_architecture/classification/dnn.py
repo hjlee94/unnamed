@@ -1,4 +1,6 @@
 from torch import nn
+import torch
+import numpy as np
 
 class _DeepNeuralNetworkArchitecture(nn.Module):
 
@@ -41,7 +43,9 @@ class _DeepNeuralNetworkArchitecture(nn.Module):
 
     def _init_weights(self):
         for layer in self.layer_stack:
-            if layer.__class__.__name__ != 'Linear':
-                continue
+            if layer.__class__.__name__ in ['Linear']:
+                base_value = np.sqrt(2 / layer.weight.shape[0])
 
-            layer.weight.data.normal_()
+                layer.weight.data.normal_(mean=0, std=base_value)
+
+                layer.bias.data = torch.zeros(layer.bias.shape)

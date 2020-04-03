@@ -10,7 +10,7 @@ import time
 
 
 class DeepNeuralNetwork:
-    def __init__(self, num_epoch=200, batch_size=256, learning_rate=1e-3):
+    def __init__(self, num_epoch=200, batch_size=256, learning_rate=1e-1):
         self._learning_rate = learning_rate
         self._num_epoch = num_epoch
         self._batch_size = batch_size
@@ -45,7 +45,7 @@ class DeepNeuralNetwork:
 
         criterion = nn.CrossEntropyLoss()
         optimizer = torch.optim.SGD(self._model.parameters(), lr=self._learning_rate, momentum=0.5, nesterov=True)
-        scheduler = StepLR(optimizer, step_size=20, gamma=0.9)
+        scheduler = StepLR(optimizer, step_size=40, gamma=0.5)
 
         for epoch in range(self._num_epoch):
             s0 = time.time()

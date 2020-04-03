@@ -10,7 +10,7 @@ import time
 
 
 class ConvolutionalNeuralNetwork:
-    def __init__(self, num_epoch=200, batch_size=1024, learning_rate=1e-3):
+    def __init__(self, num_epoch=200, batch_size=1024, learning_rate=1e-1):
         self._learning_rate = learning_rate
         self._num_epoch = num_epoch
         self._batch_size = batch_size
@@ -111,3 +111,6 @@ class ConvolutionalNeuralNetwork:
 
     def save_model(self, model_path):
         torch.save(self._model.state_dict(), model_path)
+
+    def __str__(self):
+        return str(self._model)

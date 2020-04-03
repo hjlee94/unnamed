@@ -2,12 +2,6 @@ from torch import nn
 
 class _ConvolutionalNeuralNetworkArchitecture(nn.Module):
     '''
-    1, 256, 256
-    6, 125, 125
-    6, 41, 41
-    16, 18, 18
-    16, 5, 5
-
     1, 32, 32
     30, 30, 30
     60, 28, 28
@@ -24,15 +18,15 @@ class _ConvolutionalNeuralNetworkArchitecture(nn.Module):
         self.cnn_layer_stack = nn.Sequential(
             nn.Conv2d(self.n_channel, 10, 3),
             nn.BatchNorm2d(10),
-            nn.ReLU(True),
+            nn.ReLU(),
 
             nn.Conv2d(10, 30, 3),
             nn.BatchNorm2d(30),
-            nn.ReLU(True),
+            nn.ReLU(),
 
             nn.Conv2d(30, 60, 3),
             nn.BatchNorm2d(60),
-            nn.ReLU(True),
+            nn.ReLU(),
 
             nn.MaxPool2d(2, 2),
         )
@@ -40,12 +34,12 @@ class _ConvolutionalNeuralNetworkArchitecture(nn.Module):
         self.linear_layer_stack = nn.Sequential(
             nn.Linear(60 * 13 * 13, 60),
             nn.BatchNorm1d(60),
-            nn.ReLU(True),
+            nn.ReLU(),
             nn.Dropout(0.1),
 
             nn.Linear(60, 30),
             nn.BatchNorm1d(30),
-            nn.ReLU(True),
+            nn.ReLU(),
             nn.Dropout(0.1),
 
             nn.Linear(30, self.n_out),
@@ -63,8 +57,10 @@ class _ConvolutionalNeuralNetworkArchitecture(nn.Module):
         return x
 
     def _init_weights(self):
-        for layer in self.layer_stack:
-            if layer.__class__.__name__ != 'Linear':
-                continue
+        for layer in self.cnn_layer_stack:
+            if layer.__class__.__name__ in ['Conv2d']:
+                layer.weight.data.normal_()
 
-            layer.weight.data.normal_()
+        for layer in self.linear_layer_stack:
+            if layer.__class__.__name__ in ['Linear']:
+                layer.weight.data.normal_()

@@ -87,7 +87,7 @@ class BasicAutoEncoder(BaseAutoEncoder):
         n_features = X.shape[1]
 
         if self._output_size is None:
-            self._output_size = n_features // 2
+            self._output_size = n_features // 4
 
         self._model = self.architecture(n_features, self._output_size)
         X = torch.from_numpy(X)
@@ -103,7 +103,7 @@ class BasicAutoEncoder(BaseAutoEncoder):
         criterion = nn.MSELoss()
         optimizer = torch.optim.Adam(self._model.parameters(), lr=self._learning_rate)
 
-        scheduler = StepLR(optimizer, step_size=20, gamma=0.9)
+        scheduler = StepLR(optimizer, step_size=30, gamma=0.95)
 
         for epoch in range(self._num_epoch):
             s0 = time.time()
