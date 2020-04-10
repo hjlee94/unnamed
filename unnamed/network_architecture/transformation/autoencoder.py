@@ -81,26 +81,6 @@ class _ConvolutionalAutoEncodeArchitecture(nn.Module):
         self.unpool1 = nn.MaxUnpool2d(2)
         self.deconv2 = nn.ConvTranspose2d(30, 1, 3, stride=1, padding=0)
 
-
-        # self.encoder = nn.Sequential(
-        #     nn.Conv2d(1, 30, 3),
-        #     nn.Sigmoid(),
-        #
-        #     nn.MaxPool2d(2),
-        #
-        #     nn.Conv2d(30, 60, 3),
-        #     nn.Sigmoid(),
-        # )
-        # self.decoder = nn.Sequential(
-        #     nn.ConvTranspose2d(60, 30, 3, stride=1, padding=0),
-        #     nn.Sigmoid(),
-        #
-        #     nn.MaxUnpool2d(2),
-        #
-        #     nn.ConvTranspose2d(30, 1, 3, stride=1, padding=0),
-        #     nn.Sigmoid()
-        # )
-
     def _encode(self, x):
         index_list = list()
 

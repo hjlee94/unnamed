@@ -1,12 +1,15 @@
 from unnamed.network_architecture.classification.cnn import _ConvolutionalNeuralNetworkArchitecture
+from unnamed.network_architecture.classification.cnn import _3C2D, _2C1D
 from unnamed.classification.interface.dataset import NumpyDataset
 from torch.utils.data import Dataset, DataLoader
 from torch.autograd import Variable
-from torch.optim.lr_scheduler import StepLR
+from torch.optim.lr_scheduler import StepLR, MultiStepLR
 from torch import nn
+from unnamed.log import Logger
 import numpy as np
 import torch
 import time
+
 
 
 class ConvolutionalNeuralNetwork:
@@ -15,14 +18,21 @@ class ConvolutionalNeuralNetwork:
         self._num_epoch = num_epoch
         self._batch_size = batch_size
 
+        # self.architecture = _2C1D
         self.architecture = _ConvolutionalNeuralNetworkArchitecture
 
         self.gpu_available = torch.cuda.is_available()
 
-    def fit(self, X, y, validation_set=None):
+        self._logger = Logger.get_instance()
+
+    def fit(self, X, y, validation_set=None, parameter_path=None):
         n_cls = len(np.unique(y))
 
         self._model = self.architecture(1, n_cls)
+
+        if parameter_path is not None:
+            self.load_parameter(self._model, parameter_path)
+
         X = torch.from_numpy(X)
         y = torch.from_numpy(y)
 
@@ -39,8 +49,11 @@ class ConvolutionalNeuralNetwork:
 
         criterion = nn.CrossEntropyLoss()
         optimizer = torch.optim.SGD(self._model.parameters(), lr=self._learning_rate, momentum=0.5, nesterov=True)
-        # optimizer = torch.optim.Adam(self._model.parameters(), lr=self._learning_rate, weight_decay=1e-7)
-        scheduler = StepLR(optimizer, step_size=20, gamma=0.9)
+        # optimizer = torch.optim.Adam(self._model.parameters(), lr=self._learning_rate)
+
+        # scheduler = StepLR(optimizer, step_size=20, gamma=0.8)
+        # scheduler = MultiStepLR(optimizer, milestones=[100,200], gamma=0.1)
+        scheduler = MultiStepLR(optimizer, milestones=[40, 80, 90, 95], gamma=0.8)
 
         for epoch in range(self._num_epoch):
             s0 = time.time()
@@ -64,10 +77,10 @@ class ConvolutionalNeuralNetwork:
                 y_pred = self.predict(X_tes)
                 test_acc = np.mean(y_pred == y_tes)
 
-                print('epoch [{}/{}], loss:{:.4f}, test_acc:{:.3f}, elapsed_time:{:.2f}, learning_rate:{:f}'.format(
+                self._logger.log_i('epoch [{}/{}], loss:{:.4f}, test_acc:{:.3f}, elapsed_time:{:.2f}, learning_rate:{:f}'.format(
                     epoch + 1, self._num_epoch, loss.data.item(), test_acc, elapsed_time, scheduler.get_lr()[0]))
             else:
-                print('epoch [{}/{}], loss:{:.4f}, elapsed_time:{:.2f}, learning_rate:{:.8f}'.format(
+                self._logger.log_i('epoch [{}/{}], loss:{:.4f}, elapsed_time:{:.2f}, learning_rate:{:.8f}'.format(
                     epoch + 1, self._num_epoch, loss.data.item(), elapsed_time, scheduler.get_lr()[0]))
 
     def _predict(self, X):
@@ -109,8 +122,12 @@ class ConvolutionalNeuralNetwork:
 
         return outputs
 
-    def save_model(self, model_path):
+    def save_parameter(self, model_path):
         torch.save(self._model.state_dict(), model_path)
+
+    def load_parameter(self, model, parameter_path):
+        model.load_state_dict(torch.load(parameter_path))
+        return model
 
     def __str__(self):
         return str(self._model)

@@ -20,10 +20,6 @@ class DeepNeuralNetwork:
         self.gpu_available = torch.cuda.is_available()
 
     def fit(self, X, y, validation_set=None):
-        def get_lr(optimizer):
-            for param_group in optimizer.param_groups:
-                return param_group['lr']
-
         n_features = X.shape[1]
         n_cls = len(np.unique(y))
 

@@ -73,7 +73,7 @@ class WindowEntropyMap(_BinaryFeature):
 
         self.step_size = 256
         self.window_size = 1024
-        self.maxtrix_size = 32
+        self.maxtrix_size = 64
         self.row_size = np.round(float(8.1) / self.maxtrix_size, 4)
 
     def _map_row_index(self, val):

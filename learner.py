@@ -3,7 +3,10 @@
 from unnamed.classification import Classifier
 import argparse
 import sys
+import re
 import time
+
+number_pattern = re.compile(r'\d+\.?\d+')
 
 def split_parameters(args):
     parameter_args = list()
@@ -25,7 +28,7 @@ def init_parameters(parameter_args):
         parameter_pair = parameter_pair.lower()
         name, value = parameter_pair.split('=')
 
-        if value.isalpha():
+        if not number_pattern.match(value):
             value = str(value)
 
         else:
