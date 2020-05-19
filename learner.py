@@ -6,7 +6,7 @@ import sys
 import re
 import time
 
-number_pattern = re.compile(r'\d+\.?\d+')
+number_pattern = re.compile(r'\d+(\.?\d+)?')
 
 def split_parameters(args):
     parameter_args = list()

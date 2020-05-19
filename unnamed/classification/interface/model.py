@@ -13,6 +13,8 @@ class Metric:
 
         self.metric_table = dict()
         self.metric_table['acc'] = self.accuracy
+        self.metric_table['2-acc'] = self.top_2_accuracy
+        self.metric_table['3-acc'] = self.top_3_accuracy
         self.metric_table['err'] = self.error
         self.metric_table['roc_auc'] = self.roc_auc
         self.metric_table['prc'] = self.prc
@@ -37,6 +39,26 @@ class Metric:
     def accuracy(self, y_true, y_pred):
         acc = np.mean(y_true == y_pred)
         return acc
+
+    def top_n_accuracy(self, y_true, y_score, n):
+        y_candidate = np.argsort(y_score)[:, -n:]
+
+        k_acc = list()
+        for y, candidates in zip(y_true, y_candidate):
+            if y in candidates:
+                score = 1
+            else:
+                score = 0
+
+            k_acc.append(score)
+
+        return sum(k_acc) / len(k_acc)
+
+    def top_2_accuracy(self, y_true, y_score):
+        return self.top_n_accuracy(y_true, y_score, n=2)
+
+    def top_3_accuracy(self, y_true, y_score):
+        return self.top_n_accuracy(y_true, y_score, n=3)
 
     def error(self, y_true, y_pred):
         acc = self.accuracy(y_true, y_pred)
@@ -116,6 +138,7 @@ class ModelInterface:
         self.common_metric = ['acc','err']
         self.label_based_metric = ['tpr', 'fpr', 'precision', 'recall', 'f1-score']#, 'bacc', 'berr']
         self.proba_based_metric = ['roc_auc', 'prc']
+        self.special_based_metric = ['2-acc','3-acc']
 
         self.metric = Metric()
         self.logger = Logger.get_instance()
@@ -155,6 +178,12 @@ class ModelInterface:
 
         elif metric in self.label_based_metric:
             score = self._get_label_score(X_tes, y_tes, metric, mark)
+
+        elif metric in self.special_based_metric:
+            if not hasattr(self.model, 'predict_proba'):
+                return
+
+            score = self._get_special_score(X_tes, y_tes, metric)
 
         elif metric in self.proba_based_metric:
             if not hasattr(self.model, 'predict_proba'):
@@ -213,6 +242,16 @@ class ModelInterface:
                 total_score += score_cls
 
             score = total_score / float(len(self.classes))
+
+        return score
+
+    def _get_special_score(self, X_tes, y_tes, metric):
+        metric_func = self.metric.get_metric(metric)
+
+        y_prob = self.predict_proba(X_tes)
+        y_true = y_tes
+
+        score = metric_func(y_true, y_prob)
 
         return score
 

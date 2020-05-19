@@ -5,30 +5,6 @@ import numpy as np
 import sys, os
 
 
-def complement(x):
-    x[x <= -1] = -1
-    x[x >= +1] = +1
-    x += 1
-    x = x / 2.0
-    x = x * 255
-    x[x < 0] = 0
-    x[x > 255] = 255
-
-    x = np.array(x, dtype=np.uint8)
-
-    return x
-
-def to_image(x, name):
-    x = complement(x)
-
-    if len(x.shape) > 2:
-        x = x[0]
-
-    x = Image.fromarray(x)
-    # x.show()
-    x.save('%s.bmp'%name, "BMP")
-
-
 input_path = sys.argv[1]
 
 file_name = os.path.basename(input_path).split('.')[0]
@@ -44,9 +20,9 @@ X = scaler.fit_transform(X) # -1 ~ +1
 
 print(X.shape)
 
-X = X.reshape((X.shape[0], 1, 32,32))
-
-transformer = FeatureReducer('conv')
+# X = X.reshape((X.shape[0], 1, 32,32))
+# transformer = FeatureReducer('conv',num_epoch=200, learning_rate = 0.01)
+transformer = FeatureReducer('basic',num_epoch=200, output_size=128, learning_rate = 0.01)
 
 transformer.fit(X)
 

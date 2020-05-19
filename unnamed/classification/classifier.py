@@ -1,6 +1,7 @@
 from unnamed.classification.interface.dataset import DatasetInterface, DataInstance
 from unnamed.classification.interface.model import ModelInterface
 from unnamed.classification.algorithm.dnn import DeepNeuralNetwork
+from unnamed.classification.algorithm.cnn import ConvolutionalNeuralNetwork
 from unnamed.preprocessing import FeatureReducer, DataSampler, DataScaler
 from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import confusion_matrix
@@ -23,6 +24,7 @@ class Classifier:
     algorithm_table['lightgbm'] = LGBMClassifier
     algorithm_table['gaussian_bayes'] = GaussianNB
     algorithm_table['dnn'] = DeepNeuralNetwork
+    algorithm_table['cnn'] = ConvolutionalNeuralNetwork
     algorithm_table['knn'] = KNeighborsClassifier
     algorithm_table['svc'] = SVC
 
@@ -122,6 +124,8 @@ class Classifier:
             self._model.fit(X_tra, y_tra)
 
             self._model.get_score(X_tra, y_tra, metric='acc', mark='train')
+            self._model.get_score(X_tra, y_tra, metric='2-acc', mark='train')
+            self._model.get_score(X_tra, y_tra, metric='3-acc', mark='train')
             self._model.get_score(X_tra, y_tra, metric='err', mark='train')
             self._model.get_score(X_tra, y_tra, metric='tpr', mark='train')
             self._model.get_score(X_tra, y_tra, metric='fpr', mark='train')
@@ -131,6 +135,8 @@ class Classifier:
             self._model.get_score(X_tra, y_tra, metric='prc', mark='train')
 
             self._model.get_score(X_tes, y_tes, metric='acc', mark='test')
+            self._model.get_score(X_tes, y_tes, metric='2-acc', mark='test')
+            self._model.get_score(X_tes, y_tes, metric='3-acc', mark='test')
             self._model.get_score(X_tes, y_tes, metric='err', mark='test')
             self._model.get_score(X_tes, y_tes, metric='tpr', mark='test')
             self._model.get_score(X_tes, y_tes, metric='fpr', mark='test')

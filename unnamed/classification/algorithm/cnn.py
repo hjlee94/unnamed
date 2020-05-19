@@ -1,4 +1,5 @@
-from unnamed.network_architecture.classification.cnn import _ConvolutionalNeuralNetworkArchitecture
+from unnamed.network_architecture.classification.cnn import _ConvolutionalNeuralNetworkArchitecture4
+from unnamed.network_architecture.classification.cnn import _ConvolutionalNeuralNetworkArchitecture5
 from unnamed.network_architecture.classification.cnn import _3C2D, _2C1D
 from unnamed.classification.interface.dataset import NumpyDataset
 from torch.utils.data import Dataset, DataLoader
@@ -10,16 +11,16 @@ import numpy as np
 import torch
 import time
 
+torch.manual_seed(25)
 
 
 class ConvolutionalNeuralNetwork:
-    def __init__(self, num_epoch=200, batch_size=1024, learning_rate=1e-1):
+    def __init__(self, num_epoch=200, batch_size=1024, learning_rate=0.08):
         self._learning_rate = learning_rate
         self._num_epoch = num_epoch
         self._batch_size = batch_size
 
-        # self.architecture = _2C1D
-        self.architecture = _ConvolutionalNeuralNetworkArchitecture
+        self.architecture = _ConvolutionalNeuralNetworkArchitecture4
 
         self.gpu_available = torch.cuda.is_available()
 
@@ -48,12 +49,14 @@ class ConvolutionalNeuralNetwork:
         train_loader = DataLoader(dataset, batch_size=self._batch_size)
 
         criterion = nn.CrossEntropyLoss()
-        optimizer = torch.optim.SGD(self._model.parameters(), lr=self._learning_rate, momentum=0.5, nesterov=True)
+        optimizer = torch.optim.SGD(self._model.parameters(), lr=self._learning_rate, momentum=0.3, nesterov=True)
         # optimizer = torch.optim.Adam(self._model.parameters(), lr=self._learning_rate)
 
         # scheduler = StepLR(optimizer, step_size=20, gamma=0.8)
         # scheduler = MultiStepLR(optimizer, milestones=[100,200], gamma=0.1)
-        scheduler = MultiStepLR(optimizer, milestones=[40, 80, 90, 95], gamma=0.8)
+        # scheduler = MultiStepLR(optimizer, milestones=[20, 80, 90, 95], gamma=0.8)
+        scheduler = MultiStepLR(optimizer, milestones=[200, 210, 290, 295], gamma=0.5)
+        # scheduler = MultiStepLR(optimizer, milestones=[100, 150, 290, 295], gamma=0.5)
 
         for epoch in range(self._num_epoch):
             s0 = time.time()

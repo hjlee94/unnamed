@@ -13,7 +13,8 @@ class FeatureExtractor:
         '1-gram': UniGramMatrix,
         '2-gram': TwoGramMatrix,
         'wem': WindowEntropyMap,
-        'entropy_histogram': EntropyHistogram
+        'entropy_histogram': EntropyHistogram,
+        'grayscale': GrayscaleImage
     }
 
     @staticmethod

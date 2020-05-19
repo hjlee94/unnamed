@@ -88,16 +88,24 @@ class _3C2D(nn.Module):
         return x
 
 
-class _ConvolutionalNeuralNetworkArchitecture3(nn.Module):
+class _ConvolutionalNeuralNetworkArchitecture5(nn.Module):
     '''
-    1, 32, 32
+    1, 256, 256
 
-    30, 30, 30
-    60, 28, 28
-    90, 26, 26
-    90, 13, 13
+    32, 252
+    32, 126
 
+    64, 124
+    64, 62
 
+    128, 60
+    128, 30
+
+    128, 28, 28
+    128, 14, 14
+
+    256, 12, 12
+    256, 6, 6
     '''
     def __init__(self, n_channel, n_out):
         super().__init__()
@@ -105,15 +113,19 @@ class _ConvolutionalNeuralNetworkArchitecture3(nn.Module):
         self.n_out = n_out
 
         self.cnn_layer_stack = nn.Sequential(
-                nn.Conv2d(self.n_channel, 32, 3),
+                nn.Conv2d(self.n_channel, 32, kernel_size=(5,5), stride=(1,1)),
                 nn.BatchNorm2d(32),
                 nn.ReLU(),
 
-                nn.Conv2d(32, 64, 3),
+                nn.MaxPool2d(2, 2),
+
+                nn.Conv2d(32, 64, kernel_size=(3, 3), stride=(1, 1)),
                 nn.BatchNorm2d(64),
                 nn.ReLU(),
 
-                nn.Conv2d(64, 128, 3),
+                nn.MaxPool2d(2, 2),
+
+                nn.Conv2d(64, 128, kernel_size=(3, 3), stride=(1, 1)),
                 nn.BatchNorm2d(128),
                 nn.ReLU(),
 
@@ -121,7 +133,7 @@ class _ConvolutionalNeuralNetworkArchitecture3(nn.Module):
             )
 
         self.linear_layer_stack = nn.Sequential(
-                nn.Linear(128 * 13 * 13, 1024),
+                nn.Linear(128 * 30 * 30, 1024),
                 nn.BatchNorm1d(1024),
                 nn.ReLU(),
 
@@ -139,12 +151,129 @@ class _ConvolutionalNeuralNetworkArchitecture3(nn.Module):
 
     def forward(self, x):
         x = self.cnn_layer_stack(x)
-        x = x.view((-1, 128 * 13 * 13))
+        x = x.view((-1, 128 * 30 * 30))
 
         x = self.linear_layer_stack(x)
 
         return x
 
+class _ConvolutionalNeuralNetworkArchitecture4(nn.Module):
+    '''
+    1, 32, 32
+
+    64, 30, 30
+    128, 28, 28
+    128, 14, 14
+    256, 12, 12
+    256, 6, 6
+    '''
+    def __init__(self, n_channel, n_out):
+        super().__init__()
+        self.n_channel = n_channel
+        self.n_out = n_out
+
+        self.cnn_layer_stack = nn.Sequential(
+                nn.Conv2d(self.n_channel, 64, kernel_size=(3,3), stride=(1,1)),
+                nn.BatchNorm2d(64),
+                nn.ReLU(),
+
+                nn.Conv2d(64, 128, kernel_size=(3, 3), stride=(1, 1)),
+                nn.BatchNorm2d(128),
+                nn.ReLU(),
+
+                nn.MaxPool2d(2, 2),
+
+                nn.Conv2d(128, 256, kernel_size=(3, 3), stride=(1, 1)),
+                nn.BatchNorm2d(256),
+                nn.ReLU(),
+
+                nn.MaxPool2d(2, 2),
+            )
+
+        self.linear_layer_stack = nn.Sequential(
+                nn.Linear(256 * 6 * 6, 1024),
+                nn.BatchNorm1d(1024),
+                nn.ReLU(),
+
+                nn.Linear(1024, 512),
+                nn.BatchNorm1d(512),
+                nn.ReLU(),
+
+                nn.Linear(512, 256),
+                nn.BatchNorm1d(256),
+                nn.ReLU(),
+
+                nn.Linear(256, self.n_out),
+                nn.Softmax(dim=1)
+            )
+
+    def forward(self, x):
+        x = self.cnn_layer_stack(x)
+        x = x.view((-1, 256 * 6 * 6))
+
+        x = self.linear_layer_stack(x)
+
+        return x
+
+class _ConvolutionalNeuralNetworkArchitecture3(nn.Module):
+    '''
+    1, 32, 32
+
+    30, 30, 30
+    60, 28, 28
+    90, 14, 14
+    90, 12, 12
+
+
+    '''
+    def __init__(self, n_channel, n_out):
+        super().__init__()
+        self.n_channel = n_channel
+        self.n_out = n_out
+
+        self.cnn_layer_stack = nn.Sequential(
+                nn.Conv2d(self.n_channel, 32, 3),
+                nn.BatchNorm2d(32),
+                nn.ReLU(),
+
+                nn.Conv2d(32, 64, 3),
+                nn.BatchNorm2d(64),
+                nn.ReLU(),
+
+                nn.MaxPool2d(2, 2),
+
+                nn.Conv2d(64, 128, 3),
+                nn.BatchNorm2d(128),
+                nn.ReLU(),
+
+                nn.Conv2d(128, 128, 3),
+                nn.BatchNorm2d(128),
+                nn.ReLU(),
+
+                nn.MaxPool2d(2, 2),
+            )
+
+        self.linear_layer_stack = nn.Sequential(
+                nn.Linear(128 * 5 * 5, 256),
+                nn.BatchNorm1d(256),
+                nn.ReLU(),
+
+                nn.Linear(256, 128),
+                nn.BatchNorm1d(128),
+                nn.ReLU(),
+
+
+                nn.Linear(128, self.n_out),
+                nn.Softmax(dim=1)
+            )
+
+    def forward(self, x):
+        x = self.cnn_layer_stack(x)
+        x = x.view((-1, 128 * 5 * 5))
+
+        x = self.linear_layer_stack(x)
+
+        return x
 
 class _ConvolutionalNeuralNetworkArchitecture2(nn.Module):
     '''
@@ -186,7 +315,6 @@ class _ConvolutionalNeuralNetworkArchitecture2(nn.Module):
                 nn.Linear(512, 256),
                 nn.BatchNorm1d(256),
                 nn.ReLU(),
-
 
                 nn.Linear(256, self.n_out),
                 nn.Softmax(dim=1)

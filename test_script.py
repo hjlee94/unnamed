@@ -6,14 +6,20 @@ from unnamed.preprocessing import FeatureReducer, DataSampler, DataScaler
 from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import confusion_matrix
 from datetime import datetime
+import numpy as np
 import sys
+
+from sklearn.cluster import DBSCAN
+
+np.random.seed(25)
 
 dd = DatasetInterface(sys.argv[1], label_pos=0, remove_zero_vector=False)
 print(dd)
 X, y = dd.get_XY()
 
 X = DataScaler('scale').fit_transform(X)
-print(X.shape)
+X = X.reshape(X.shape[0], 1, 32, 32)
+# X = X.reshape(X.shape[0], 1, 256, 256)
 
 # X_sampled, y_sampled = DataSampler(method='random').fit_sample(X,y, n=20000)
 
@@ -30,10 +36,11 @@ print(X.shape)
 # print(X_inverse_transformed)
 
 #model = ModelInterface(DeepNeuralNetwork(num_epoch=200, batch_size=256))
-model = ModelInterface(ConvolutionalNeuralNetwork(num_epoch=300, batch_size=256))
+model = ModelInterface(ConvolutionalNeuralNetwork(num_epoch=200, batch_size=256))
+# from lightgbm.sklearn import LGBMClassifier
+# model = ModelInterface(LGBMClassifier(max_depth=10, n_estimators=100, num_leaves=512))
 kf = StratifiedKFold(n_splits=3, shuffle=True, random_state=25)
 for idx_tra, idx_tes in kf.split(X, y):
-    X = X.reshape(X.shape[0],1, 32, 32)
     # print(X.shape)
 
     X_tra = X[idx_tra]
@@ -41,11 +48,16 @@ for idx_tra, idx_tes in kf.split(X, y):
     X_tes = X[idx_tes]
     y_tes = y[idx_tes]
 
-    print(X_tra.shape)
+    print(DataInstance(X_tra, y_tra))
+    #
+    # print(X_tra.shape)
     # model.fit(X_tra, y_tra, validation_set=(X_tes, y_tes), parameter_path='./CNN_state2.state_dict')
     model.fit(X_tra, y_tra, validation_set=(X_tes, y_tes))
+    # model.fit(X_tra, y_tra)
 
     model.get_score(X_tra, y_tra, metric='acc', mark='train')
+    model.get_score(X_tra, y_tra, metric='2-acc', mark='train')
+    model.get_score(X_tra, y_tra, metric='3-acc', mark='train')
     model.get_score(X_tra, y_tra, metric='err', mark='train')
     model.get_score(X_tra, y_tra, metric='tpr', mark='train')
     model.get_score(X_tra, y_tra, metric='fpr', mark='train')
@@ -55,6 +67,8 @@ for idx_tra, idx_tes in kf.split(X, y):
     model.get_score(X_tra, y_tra, metric='prc', mark='train')
 
     model.get_score(X_tes, y_tes, metric='acc', mark='test')
+    model.get_score(X_tra, y_tra, metric='2-acc', mark='test')
+    model.get_score(X_tra, y_tra, metric='3-acc', mark='test')
     model.get_score(X_tes, y_tes, metric='err', mark='test')
     model.get_score(X_tes, y_tes, metric='tpr', mark='test')
     model.get_score(X_tes, y_tes, metric='fpr', mark='test')
